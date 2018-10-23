@@ -14,7 +14,7 @@ VERSION_FILE = 'VERSION'
 version = open(VERSION_FILE).read().strip()
 
 setup(
-    name="PyPago",
+    name="pypago",
     version=version,
     author="PAGO team",
     author_email="pago-dev@groupes.renater.fr",
@@ -24,7 +24,7 @@ setup(
     license="CeCILL", 
     keywords="ocean; grid model; transport; sections; budgets; heat; freshwater; ROMS; NEMO; IPSL; CNRM; GFDL",
     include_package_data=True,
-    url="http://pypago.nicolasbarrier.fr/",
+    url="https://sourcesup.renater.fr/pago",
     packages=find_packages(),
     install_requires=['docutils>=0.12',
                       'sphinx>=1.3.1',
