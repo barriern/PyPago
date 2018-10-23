@@ -1,1 +1,25 @@
-../trunk/MANIFEST.in
+include VERSION
+include bin/*
+include man/*.1
+
+recursive-include mapago *
+exclude community *.csv
+
+####################################### Processing PyPago Read The Doc
+
+recursive-include doc_pypago *
+recursive-exclude doc_pypago *.nc
+recursive-exclude doc_pypago *.pygo
+recursive-exclude doc_pypago/generated *
+recursive-exclude doc_pypago/_build/doctrees *
+exclude doc_pypago/send_to_ftp.sh
+
+####################################### Processing user doc
+
+recursive-include docs *
+recursive-exclude docs *.nc
+recursive-exclude docs *.pygo
+recursive-exclude docs/manual/source/pypago/generated *
+recursive-exclude docs/manual/_build/doctrees *
+exclude docs/manual/pypago_manual.tex
+exclude docs/manual/pypago_manual.pdf
