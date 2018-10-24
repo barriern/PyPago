@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-setup for packaging |pago|"
+Setup for packaging |pago|"
 """
 
 __docformat__ = "restructuredtext en"
