@@ -1,11 +1,11 @@
 ''' Toolbox for the definition of gridded sections '''
 
 import numpy as np
-from sample_param import ee
 try:
     from param import ee
-except:
-    pass
+except ImportError:
+    from pypago.sample_param import ee
+from pypago.misc import findsecnum, PypagoErrors
 
 def secingrid(fromi, fromj, toi, toj):
 
@@ -47,7 +47,7 @@ def secingrid(fromi, fromj, toi, toj):
             a = (toj - fromj) / ((toi - fromi).astype(np.float))
             b = toj - toi*a
 
-            while not ((veci[-1] == toi) & (vecj[-1] == toj)):
+            while not (veci[-1] == toi) & (vecj[-1] == toj):
                 newi = veci[-1] + np.sign(toi - fromi)
                 newj = vecj[-1] + np.sign(toj - fromj)
                 y = a * newi + b
@@ -59,7 +59,7 @@ def secingrid(fromi, fromj, toi, toj):
                 else:
                     veci = np.append(veci, veci[-1])
                     vecj = np.append(vecj, newj)
-    
+
     # correction back to python (removing off=1)
     veci = veci.astype(np.int) - off
     vecj = vecj.astype(np.int) - off
@@ -69,7 +69,7 @@ def secingrid(fromi, fromj, toi, toj):
 def lengthinsec(veci, vecj, faces, dw, dn):
 
     """
-    Determines the length of section edges 
+    Determines the length of section edges
     depending on the cell face.
 
     :param numpy.array veci: i index of the section grid cells
@@ -96,7 +96,7 @@ def locingrid(lon, lat, matlon, matlat):
 
     """
     Locates the nearest grid point (lon,lat)
-    within the 2D grid defined by the matlon 
+    within the 2D grid defined by the matlon
     and matlat arrays.
 
     :param numpy.array lon: Array that contains the longitude
@@ -161,7 +161,7 @@ def locingrid(lon, lat, matlon, matlat):
 def distance(lat1, lon1, lat2, lon2, geoid):
 
     """
-    Computes the distance between the points 
+    Computes the distance between the points
     (lon1, lat1) and (lon2, lat2). This function
     used the :py:func:`mpl_toolkits.basemap.pyproj.Geod.inv`
     function.
@@ -224,7 +224,7 @@ def consec(veci1, vecj1, faces1, orient1, veci2, vecj2, faces2, orient2):
     # better "syntax"
     # correction of a huge bug: any replaced by all
     # correction nbarrier: should be < instead of <=
-    if np.all(veci2 < veci1[-2]):   
+    if np.all(veci2 < veci1[-2]):
         [faces, veci, vecj, orient] = conseclr2(veci2[::-1], vecj2[::-1],
                                                 faces2[::-1], orient2[::-1],
                                                 veci1[::-1], vecj1[::-1],
@@ -457,21 +457,21 @@ def facesinsec(veci, vecj, dire):
     """
 
     if len(veci) == 1:
-        logger.error('only one point in sequence; no face should be used')
-        raise IndexError
+        error = PypagoErrors('only one point in sequence; no face should be used')
+        raise error
 
     if not monotonous(veci):
-        logger.error('sequence veci must be monotonous')
-        raise ValueError
+        error = PypagoErrors('sequence veci must be monotonous')
+        raise error
 
     if not monotonous(vecj):
-        logger.error('sequence vecj must be monotonous')
-        raise ValueError
+        error = PypagoErrors('sequence vecj must be monotonous')
+        raise error
 
     if veci[-1] == veci[0]:
         newveci = np.copy(veci)
         newvecj = np.copy(vecj)
-        faces = ['W'] * len(newveci);
+        faces = ['W'] * len(newveci)
     else:
 
         changedir = 0
@@ -619,17 +619,9 @@ def monotonous(vect):
     """
 
     if len(vect) == 1:
-        logger.error('only one point in sequence; no face should be used')
-        raise IndexError
+        error = PypagoErrors('only one point in sequence; no face should be used')
+        raise error
 
     diff = vect[1:] - vect[0:-1]
     res = (np.all(diff >= 0)) or (np.all(diff <= 0))
     return res
-
-
-# Run main, if called from the command line
-if __name__ == '__main__':
-
-    exit()
-
-

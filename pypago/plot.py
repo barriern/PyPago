@@ -3,10 +3,12 @@
 Module that contains various functions dedicated to plotting using |pypago|
 """
 
+from __future__ import print_function
 import numpy as np
 import pylab as plt
 from matplotlib.colors import ListedColormap
-import pypago.misc
+from pypago.misc import PypagoErrors, extract_mask, make_percentile_cmap
+
 
 def plot_dom_mask(grid, gridsec=None, mask=None, ax=None):
 
@@ -40,21 +42,20 @@ def plot_dom_mask(grid, gridsec=None, mask=None, ax=None):
     plt.ylim(0, grid.mask.shape[0])
 
 
-def _data_prep(secstruct, vartoplot, istracer=None, itime=None):
+def _data_prep(secstruct, vartoplot, output_form, istracer=None, itime=None):
 
     """ Data extraction, preparation and masking prior to plotting """
-    
-    if not(hasattr(secstruct, vartoplot)):
+
+    if not hasattr(secstruct, vartoplot):
         message = 'The "%s" variables is not an attribute '
         message += 'of the input section.'
         raise PypagoErrors(message)
 
     secdata = getattr(secstruct, vartoplot)
-    sectionname = secstruct.name
 
     if secdata.ndim == 3:
         if itime is None:
-            message = 'The time average of the %s ' %vartoplot
+            message = 'The time average of the %s ' % vartoplot
             message += 'is plotted.'
             print(message)
             secdata = np.mean(secdata, axis=0)
@@ -67,20 +68,23 @@ def _data_prep(secstruct, vartoplot, istracer=None, itime=None):
                 message += 'This program will be stopped'
                 raise PypagoErrors(message)
 
-    atracer, zvect, lvect, \
-    atracer_pcol, zvect_pcol, lvect_pcol = preplot(secstruct, secdata, istracer)
+    atracer, zvect, lvect, atracer_pcol, zvect_pcol, lvect_pcol = preplot(secstruct, secdata, istracer)
 
-    atracer_pcol = np.ma.masked_where(pypago.misc.extract_mask(atracer_pcol), atracer_pcol)
-    atracer = np.ma.masked_where(pypago.misc.extract_mask(atracer), atracer)
-    
-    lvect_pcol = np.ma.masked_where(pypago.misc.extract_mask(lvect_pcol), lvect_pcol)
-    lvect = np.ma.masked_where(pypago.misc.extract_mask(lvect), lvect)
+    atracer_pcol = np.ma.masked_where(extract_mask(atracer_pcol), atracer_pcol)
+    atracer = np.ma.masked_where(extract_mask(atracer), atracer)
 
-    zvect_pcol = np.ma.masked_where(zvect_pcol==0, zvect_pcol)
+    lvect_pcol = np.ma.masked_where(extract_mask(lvect_pcol), lvect_pcol)
+    lvect = np.ma.masked_where(extract_mask(lvect), lvect)
+
+    zvect_pcol = np.ma.masked_where(zvect_pcol == 0, zvect_pcol)
     lvect_pcol = np.ma.masked_where(np.ma.getmaskarray(zvect_pcol), lvect_pcol)
-    
-    return atracer, zvect, lvect, \
-           atracer_pcol, zvect_pcol, lvect_pcol
+
+    if output_form == 'pcolor':
+        output = (atracer_pcol, zvect_pcol, lvect_pcol)
+    else:
+        output = (atracer, zvect, lvect)
+
+    return output
 
 
 def pcolplot(secstruct, vartoplot, istracer, itime=None, ax=None):
@@ -96,29 +100,28 @@ def pcolplot(secstruct, vartoplot, istracer, itime=None, ax=None):
     :param ax ax: Axis. If None, gca()
 
     :return: cs, cb
-    
+
     """
-    
-    atracer, zvect, lvect, \
-    atracer_pcol, zvect_pcol, lvect_pcol = _data_prep(secstruct, vartoplot, istracer, itime)
-    
-    zmin, zmax = zvect.min(), zvect.max()
-    lmin, lmax = lvect.min(), lvect.max()
-   
+
+    atracer_pcol, zvect_pcol, lvect_pcol = _data_prep(secstruct, vartoplot, 'pcolor', istracer, itime)
+
+    zmin, zmax = zvect_pcol.min(), zvect_pcol.max()
+    lmin, lmax = lvect_pcol.min(), lvect_pcol.max()
+
     if ax is None:
         ax = plt.gca()
-    
+
     cs = plt.pcolormesh(lvect_pcol, zvect_pcol, atracer_pcol)
     cb = plt.colorbar(cs)
-   
-    cmin, cmax = pypago.misc.make_percentile_cmap(atracer_pcol, 5)
+
+    cmin, cmax = make_percentile_cmap(atracer_pcol, 5)
     cs.set_clim(cmin, cmax)
 
     if not istracer:
         cmin, cmax = cs.get_clim()
         cmax = np.max(np.abs([cmin, cmax]))
         cs.set_clim(-cmax, cmax)
-   
+
     ax.set_facecolor("gray")
     ax.set_xlim(lmin, lmax)
     ax.set_ylim(zmin, zmax)
@@ -140,20 +143,19 @@ def contourplot(secstruct, vartoplot, istracer, itime=None, ax=None, **kwargs):
     :param ax ax: Axis. If None, gca()
 
     :return: cs, cb
-    
+
     """
-    
-    atracer, zvect, lvect, \
-    atracer_pcol, zvect_pcol, lvect_pcol = _data_prep(secstruct, vartoplot, istracer, itime)
-    
+
+    atracer, zvect, lvect = _data_prep(secstruct, vartoplot, 'contour', istracer, itime)
+
     zmin, zmax = zvect.min(), zvect.max()
     lmin, lmax = lvect.min(), lvect.max()
-   
+
     if ax is None:
         ax = plt.gca()
-    
+
     cl = plt.contour(lvect, zvect, atracer, **kwargs)
-   
+
     ax.set_facecolor("gray")
     ax.set_xlim(lmin, lmax)
     ax.set_ylim(zmin, zmax)
@@ -213,17 +215,17 @@ def _nodouble_v(veci, vecj, vecv):
     """
     Returns the velocity field after removing
     the duplicated values of (`veci`, `vecj`)
-    
+
     .. warning::
-        Relies on the assumption that all sections go 
+        Relies on the assumption that all sections go
         from West to East
 
     :param numpy.array veci: i indexes of the section
     :param numpy.array vecj: j indexes of the section
     :param numpy.array vecv: velocity field of the section
-    
+
     :return: the new velocity
-    
+
     :rtype: numpy.array
 
     """
@@ -236,7 +238,7 @@ def _nodouble_v(veci, vecj, vecv):
     newvecv = np.ma.append(newvecv, vecv[0])
 
     for indl in xrange(1, veci.shape[0]):
-        if not ((veci[indl] == veci[indl-1]) & (vecj[indl] == vecj[indl-1])):
+        if not (veci[indl] == veci[indl-1]) & (vecj[indl] == vecj[indl-1]):
             newvecv = np.ma.append(newvecv, vecv[indl])
         else:
             temp = np.arctan(vecv[indl]/(-vecv[indl-1]))
@@ -250,14 +252,14 @@ def _nodouble_v(veci, vecj, vecv):
                 signe = 1
             else:
                 signe = -1
-            
+
             # barrier.n: correction according to Matlab's version
-            #if vecv[indl-1]*vecv[indl-1] + vecv[indl]*vecv[indl] >= 0:
-            #    newvecv[-1] = signe*np.sqrt(vecv[indl-1]*vecv[indl-1] +
-            #                                vecv[indl]*vecv[indl])
-            #else:
-            #    newvecv[-1] = np.nan
-            newvecv[-1] = signe * np.sqrt(vecv[l-1]**2 + vecv[l]**2)
+            # if vecv[indl-1]*vecv[indl-1] + vecv[indl]*vecv[indl] >= 0:
+            #     newvecv[-1] = signe*np.sqrt(vecv[indl-1]*vecv[indl-1] +
+            #                                 vecv[indl]*vecv[indl])
+            # else:
+            #     newvecv[-1] = np.nan
+            newvecv[-1] = signe * np.sqrt(vecv[indl - 1]**2 + vecv[indl]**2)
 
     return newvecv
 
@@ -284,10 +286,10 @@ def _nodouble_tsr(veci, vecj, vectsr):
 
     for indl in xrange(1, veci.shape[0]):
 
-        if not ((veci[indl] == veci[indl-1]) & (vecj[indl] == vecj[indl-1])):
+        if not (veci[indl] == veci[indl-1]) & (vecj[indl] == vecj[indl-1]):
             newvectsr.append(vectsr[indl])
 
-    newvectstr = np.array(newvectsr)
+    newvectsr = np.array(newvectsr)
     return newvectsr
 
 
@@ -301,9 +303,7 @@ def _make_lvect_pcol(lvect):
     :rtype: numpy.array
     """
 
-    nl = lvect.shape[1]
-    nz = lvect.shape[0]
-    lvect = np.ma.masked_where(pypago.misc.extract_mask(lvect), lvect)
+    lvect = np.ma.masked_where(extract_mask(lvect), lvect)
 
     lvect_pcol = 1.5 * lvect[:, 0:1] - 0.5 * lvect[:, 1:2]
     lvect_pcol = np.concatenate((lvect_pcol, .5 * (lvect[:, :-1] + lvect[:, 1:])), axis=1)
@@ -326,7 +326,7 @@ def _make_zvect_pcol(zvect):
     """
 
     nz, nl = zvect.shape
-    zvect = np.ma.masked_where(pypago.misc.extract_mask(zvect), zvect)
+    zvect = np.ma.masked_where(extract_mask(zvect), zvect)
 
     # initialisation of a temporary zvect_pcol array
     zvect_pcol_temp = []
@@ -345,7 +345,7 @@ def _make_zvect_pcol(zvect):
     zvect_pcol_temp = np.array(zvect_pcol_temp)
     zvect_pcol_temp = np.ma.masked_where(zvect_pcol_temp != zvect_pcol_temp,
                                          zvect_pcol_temp).T
-    
+
     # creation of the final zvect_pcol array
     zvect_pcol = np.zeros((zvect_pcol_temp.shape[0],
                            zvect_pcol_temp.shape[1]+1))
@@ -393,5 +393,5 @@ def _make_atracer_pcol(atracer):
 
     atracer_pcol = np.concatenate((atracer, np.nan*np.ones((nz, 1))), axis=1)
     atracer_pcol = np.concatenate((atracer_pcol, np.nan*np.ones((1, nl+1))), axis=0)
-    
+
     return atracer_pcol

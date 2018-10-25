@@ -1,20 +1,21 @@
 ''' Module related to model coordinates '''
 
-import os
+from __future__ import print_function
 import numpy as np
+import pylab as plt
 from pypago.disp import PypagoErrors
 import pypago.pyio
-try:
-    from param import dictvname
-    globals().update(dictvname)
-except:
-    from sample_param import dictvname
-    globals().update(dictvname)
-import pylab as plt
 import pypago.misc
+from pypago.sample_param import dictvname
+try:
+    from param import dictvname2
+    dictvname.update(dictvname2)
+except ImportError:
+    pass
 
 # we set the variables of the dictvname dict
 # as global variables
+
 
 class Coords(object):
 
@@ -67,55 +68,55 @@ class Coords(object):
         self.dze = None
 
         # reads the lon/lat variables from the file
-        print('Reading longitude: variable %s' %lon_varname)
-        self.lont = np.squeeze(pypago.pyio.readnc(self.filename, lon_varname))
+        print('Reading longitude: variable %s' % dictvname['lon_varname'])
+        self.lont = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['lon_varname']))
 
-        print('Reading latitude: variable %s' %lat_varname)
-        self.latt = np.squeeze(pypago.pyio.readnc(self.filename, lat_varname))
+        print('Reading latitude: variable %s' % dictvname['lat_varname'])
+        self.latt = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['lat_varname']))
 
         # Check whether the bathy variable exists.
         # If so, we define the bathy attribute. Else, remains None
-        if 'bathy_varname' in globals(): 
-            print('Reading bathymetry: variable %s' %bathy_varname)
-            self.bathy = np.squeeze(pypago.pyio.readnc(self.filename, bathy_varname))
+        if 'bathy_varname' in dictvname:
+            print('Reading bathymetry: variable %s' % dictvname['bathy_varname'])
+            self.bathy = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['bathy_varname']))
         else:
             print('No bathymetry is read')
 
         # Check whether the tmask variable exists.
         # If so, we define the bathy attribute. Else, remains None
-        if 'tmask_varname' in globals():
-            print('Reading T-grid mask: variable %s' %tmask_varname)
-            self.mask = np.squeeze(pypago.pyio.readnc(self.filename, tmask_varname))
+        if 'tmask_varname' in dictvname:
+            print('Reading T-grid mask: variable %s' % dictvname['tmask_varname'])
+            self.mask = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['tmask_varname']))
 
         # Cell meridional and zonal widths at center
-        print('Reading T-grid zonal width: variable %s' %dxt_varname)
-        self.dxt = np.squeeze(pypago.pyio.readnc(self.filename, dxt_varname))
+        print('Reading T-grid zonal width: variable %s' % dictvname['dxt_varname'])
+        self.dxt = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dxt_varname']))
 
-        print('Reading T-grid meridional width: variable %s' %dyt_varname)
-        self.dyt = np.squeeze(pypago.pyio.readnc(self.filename, dyt_varname))
+        print('Reading T-grid meridional width: variable %s' % dictvname['dyt_varname'])
+        self.dyt = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dyt_varname']))
 
         # Cell meridional width at eastern face of cell
-        if 'dye_varname' in globals(): 
-            print('Reading V-grid eastern meridional width: variable %s' %dye_varname)
-            self.dye = np.squeeze(pypago.pyio.readnc(self.filename, dye_varname))
+        if 'dye_varname' in dictvname:
+            print('Reading V-grid eastern meridional width: variable %s' % dictvname['dye_varname'])
+            self.dye = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dye_varname']))
 
         # Cell zonal width at northern face of cell
-        if 'dxn_varname' in globals():
-            print('Reading U-grid northern meridional width: variable %s' %dxn_varname)
-            self.dxn = np.squeeze(pypago.pyio.readnc(self.filename, dxn_varname))
+        if 'dxn_varname' in dictvname:
+            print('Reading U-grid northern meridional width: variable %s' % dictvname['dxn_varname'])
+            self.dxn = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dxn_varname']))
 
         # Cell height at center
-        if 'dzt_varname' in globals():
-            print('Reading T-grid height: variable %s' %dzt_varname)
-            self.dzt = np.squeeze(pypago.pyio.readnc(self.filename, dzt_varname))
+        if 'dzt_varname' in dictvname:
+            print('Reading T-grid height: variable %s' % dictvname['dzt_varname'])
+            self.dzt = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dzt_varname']))
 
     def __str__(self):
 
         ''' Redefinition of the string function '''
 
         output = 'Coords object:\n'
-        output +='  -filename: %s\n' %self.filename
-        output +='  -modelname: %s\n' %self.modelname
+        output += '  -filename: %s\n' % self.filename
+        output += '  -modelname: %s\n' % self.modelname
         attr_list = pypago.misc.extract_attrlist(self)
         attr_list = [attr for attr in attr_list if attr not in ['filename', 'modelname']]
         output += pypago.misc.extract_str(attr_list, self)
@@ -136,7 +137,6 @@ class Coords(object):
         return cs
 
 
-
 class NemoCoords(Coords):
 
     """
@@ -145,7 +145,7 @@ class NemoCoords(Coords):
     class::
 
         from pypago.coords import NemoCoords
-        
+
         filename = 'nemo_mesh.nc'
         coords = NemoCoords(filename)
 
@@ -182,8 +182,8 @@ class NemoCoords(Coords):
         if self.bathy is None:
             # If bathymetry is not read directly from the file, it is
             # reconstructed from the 1D depth and mbathy arrays
-            print('Reading 1D deptha array: variable %s' %depth_varname)
-            deptht = np.squeeze(pypago.pyio.readnc(self.filename, depth_varname))
+            print('Reading 1D deptha array: variable %s' % dictvname['depth_varname'])
+            deptht = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['depth_varname']))
 
             if deptht.ndim != 1:
                 message = 'The deptht array must be 1D. Currently, ' + \
@@ -191,8 +191,8 @@ class NemoCoords(Coords):
                 raise PypagoErrors(message)
 
             # extraction of the mbathy array
-            print('Reading mbathy: variable %s' %mbathy_varname)
-            mbathy = np.squeeze(pypago.pyio.readnc(self.filename, mbathy_varname))
+            print('Reading mbathy: variable %s' % dictvname['mbathy_varname'])
+            mbathy = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['mbathy_varname']))
             mbathy = mbathy.astype(np.int)
             mbathy[mbathy < 0] = 0
 
@@ -214,7 +214,7 @@ class NemoCoords(Coords):
         - Masking the dzt, dzw, dzn arrays where the associated masks
         are 0 or masked
         - Reconstruction of dzw from dze
-        
+
         """
 
         # If the e3t variable is 1D, no partial step.
@@ -235,21 +235,21 @@ class NemoCoords(Coords):
             # mbathy 2D variable
             if self.dzt.ndim == 2:
                 print("The dzt variable is 2D")
-                print("A 3D scale factor array at T, U and V " + \
+                print("A 3D scale factor array at T, U and V " +
                       "points have been computed from the 2D scale factor")
-                self.dzt = self.create_3d_e3t()
+                self.dzt = self.reconstruct_3d_e3t()
 
             else:
                 print('Dzt is 3D. Model grid is in partial step')
 
             # putting dzt as NaN where 3D mask == 0
-            self.dzt[np.squeeze(pypago.pyio.readnc(self.filename, tmask_varname)) == 0] = np.nan
+            self.dzt[np.squeeze(pypago.pyio.readnc(self.filename, dictvname['tmask_varname'])) == 0] = np.nan
 
-            if ('dze_varname' in globals()) and ('dzn_varname' in globals()):
-                print('Reading U-grid eastern height: variable %s' %dze_varname)
-                self.dze = np.squeeze(pypago.pyio.readnc(self.filename, dze_varname))
-                print('Reading V-grid northern height: variable %s' %dze_varname)
-                self.dzn = np.squeeze(pypago.pyio.readnc(self.filename, dzn_varname))
+            if ('dze_varname' in dictvname) and ('dzn_varname' in dictvname):
+                print('Reading U-grid eastern height: variable %s' % dictvname['dze_varname'])
+                self.dze = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dze_varname']))
+                print('Reading V-grid northern height: variable %s' % dictvname['dzn_varname'])
+                self.dzn = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dzn_varname']))
             else:
                 message = 'The "dze_varname" and "dzn_varname" variables '
                 message += 'are not defined. The dzn and dzw variables '
@@ -257,13 +257,13 @@ class NemoCoords(Coords):
                 print(message)
                 self.reconstruct_3d_e3uv()
 
-            if ('umask_varname' in globals()) and ('vmask_varname' in globals()):
-                # if 3D umask and vmask variables are defined, then we mask the dzw and 
+            if ('umask_varname' in dictvname) and ('vmask_varname' in dictvname):
+                # if 3D umask and vmask variables are defined, then we mask the dzw and
                 # dzn variables where masks are 0
-                print('Reading U-grid mask: variable %s' %umask_varname)
-                self.dze[np.squeeze(pypago.pyio.readnc(self.filename, umask_varname)) == 0] = np.nan
-                print('Reading V-grid mask: variable %s' %vmask_varname)
-                self.dzn[np.squeeze(pypago.pyio.readnc(self.filename, vmask_varname)) == 0] = np.nan
+                print('Reading U-grid mask: variable %s' % dictvname['umask_varname'])
+                self.dze[np.squeeze(pypago.pyio.readnc(self.filename, dictvname['umask_varname'])) == 0] = np.nan
+                print('Reading V-grid mask: variable %s' % dictvname['vmask_varname'])
+                self.dzn[np.squeeze(pypago.pyio.readnc(self.filename, dictvname['vmask_varname'])) == 0] = np.nan
 
             # putting dzt as NaN where masked
             self.dzt[np.ma.getmaskarray(self.dzt) == 1] = np.nan
@@ -277,8 +277,8 @@ class NemoCoords(Coords):
     def reconstruct_3d_e3t(self):
 
         """
-        Creates, from 2D partial step value, a 3D cell width at T points. 
-        It is constructed by using the "mbathy" variable (index of the last 
+        Creates, from 2D partial step value, a 3D cell width at T points.
+        It is constructed by using the "mbathy" variable (index of the last
         non-ocean point) and the 1D constant scale factor
 
         :return: A numpy array containing the cell width at T, U and V points
@@ -288,11 +288,11 @@ class NemoCoords(Coords):
         dzt2d = self.dzt.copy()
 
         # extraction of the mbathy variable
-        mbathy = np.squeeze(pypago.pyio.readnc(self.filename, mbathy_varname))
+        mbathy = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['mbathy_varname']))
         mbathy = mbathy.astype(np.int)
 
         # extraction of 1D scale factor
-        e3t_0 = np.squeeze(pypago.pyio.readnc(self.filename, dzt1d_varname))
+        e3t_0 = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dzt1d_varname']))
 
         # recovering the dimensions of input array
         nlat, nlon = mbathy.shape
@@ -313,7 +313,7 @@ class NemoCoords(Coords):
                     self.dzt[mbathytemp-1, ilat, ilon] = dzt2d[ilat, ilon]
 
     def reconstruct_3d_e3uv(self):
-        
+
         """
         Creates, from the dzt variable, a 3D cell width at northern and
         southern grid faces.
@@ -324,18 +324,17 @@ class NemoCoords(Coords):
 
         self.dze = self.dzt.copy()
         self.dzn = self.dzt.copy()
-        
+
         # recovering the dimensions of input array
         nlat, nlon = self.dzt.shape[1], self.dzt.shape[2]
 
         for ilat in xrange(0, nlat-1):
             for ilon in xrange(0, nlon):
                 self.dzn[:, ilat, ilon] = np.min((self.dzt[:, ilat, ilon], self.dzt[:, ilat+1, ilon]), axis=0)
-        
+
         for ilat in xrange(0, nlat):
             for ilon in xrange(0, nlon-1):
                 self.dze[:, ilat, ilon] = np.min((self.dzt[:, ilat, ilon], self.dzt[:, ilat, ilon+1]), axis=0)
-
 
 
 class GfdlCoords(Coords):
@@ -346,7 +345,7 @@ class GfdlCoords(Coords):
     class::
 
         from pypago.coords import GfdlCoords
-        
+
         filename = 'gfdl_mesh.nc'
         coords = GfdlCoords(filename)
 
@@ -388,10 +387,16 @@ class GfdlCoords(Coords):
 
         """
 
-        from param import gfdl_default
-        
+        try:
+            from param import gfdl_default
+        except ImportError:
+            message = 'Either the param.py file is missing \n'
+            message += 'or the "gfdl_default" variable is missing'
+            error = PypagoErrors(message)
+            raise error
+
         # at north WEST corner of cell
-        self.dzc = np.squeeze(pypago.pyio.readnc(self.filename, dzc_varname))
+        self.dzc = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dzc_varname']))
 
         # masking of the dzt and dzc variables
         self.dzt[self.dzt == 0] = np.nan
@@ -399,7 +404,7 @@ class GfdlCoords(Coords):
 
         if not gfdl_default:
             message = 'gfdl_default is True'
-            message += 'hence we assume that corner ' 
+            message += 'hence we assume that corner '
             message += 'point is located at the north east corner of cell'
             print(message)
             self.dzc = np.concatenate((self.dzc[:, :, -1:], self.dzc[:, :, :-1]), axis=-1)
@@ -411,7 +416,7 @@ class CcsmCoords(Coords):
     Coords class associated with the CCSM ocean model
     Inheritates from the :py:class:`pypago.coords.Coords`
     class::
-    
+
         from pypago.coords import CcsmCoords
 
         filename = 'ccsm_mesh.nc'
@@ -466,7 +471,7 @@ class MpioCoords(Coords):
     Coords class associated with the MPIO ocean model
     Inheritates from the :py:class:`pypago.coords.Coords`
     class::
-    
+
         from pypago.coords import MpioCoords
 
         filename = 'mpio_mesh.nc'
@@ -520,7 +525,7 @@ class MpioCoords(Coords):
         - Creation of dzn by multiplication of dzt with the flipped
         amsue variable
         """
-        
+
         # flipping the dimensions of the dxt/dyt arrays to
         # make north on top
         self.dxt = np.flipud(self.dxt)
@@ -531,8 +536,8 @@ class MpioCoords(Coords):
         # flipping dzt along the 2nd dimension
         # flipud doesnt work here
         self.dzt = self.dzt[:, ::-1, :]
-        self.dzw = self.dzt * np.squeeze(pypago.pyio.readnc(self.filename, amsuo_varname))[:, ::-1, :]
-        self.dzn = self.dzt * np.squeeze(pypago.pyio.readnc(self.filename, amsue_varname))[:, ::-1, :]
+        self.dzw = self.dzt * np.squeeze(pypago.pyio.readnc(self.filename, dictvname['amsuo_varname']))[:, ::-1, :]
+        self.dzn = self.dzt * np.squeeze(pypago.pyio.readnc(self.filename, dictvname['amsue_varname']))[:, ::-1, :]
 
 
 class HycoCoords(Coords):
@@ -541,7 +546,7 @@ class HycoCoords(Coords):
     Coords class associated with the Hyco ocean model
     Inheritates from the :py:class:`pypago.coords.Coords`
     class::
-    
+
         from pypago.coords import HycoCoords
 
         filename = 'Hyco_mesh.nc'
@@ -588,13 +593,13 @@ class HycoCoords(Coords):
         # reconstruction of dxn using the scqx array
         # initially read as the dxn array
         # adding NaNs on the rightmost column
-        self.dxn = pypago.pyio.readnc(self.filename, self.dxn_varname)
+        self.dxn = pypago.pyio.readnc(self.filename, dictvname['dxn_varname'])
         temp = np.nan*np.ones(self.dxn[-1:, :].shape)
         self.dxn = np.concatenate((self.dxn[1:, :], temp), axis=0)
 
-        self.dyw = np.squeeze(pypago.pyio.readnc(self.filename, dyw_varname))
+        self.dyw = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dyw_varname']))
 
-        layer_index = np.squeeze(pypago.pyio.readnc(self.filename, layind_varname))
+        layer_index = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['layind_varname']))
         self.dzt = np.ones((len(layer_index), self.dxt.shape[0], self.dxt.shape[1]))
         self.dzn = self.dzt.copy()
         self.dzw = self.dzt.copy()
@@ -617,14 +622,13 @@ class RomsCoords(Coords):
     """
 
     def __init__(self, filename):
-        
+
         ''' Initialisation of the class '''
 
         super(RomsCoords, self).__init__(filename)
         self.modelname = 'ROMS'
         self.read_scalefactors()
         self.dys = None
-        
 
     def read_scalefactors(self):
 
@@ -633,14 +637,14 @@ class RomsCoords(Coords):
         - Taking the inverse of dxt, dyt, dye and dxn
         - Adding a line of NaNs at the bottom of the dzt array
         - Extracting the dze and dzn arrays
-        - Creating the dzw array from the dze array by adding a 
+        - Creating the dzw array from the dze array by adding a
         layer of NaNs on the easternmost face of the "cube"
         """
-        
+
         # taking the inverse of scale factors
         self.dxt = 1./self.dxt
         self.dyt = 1./self.dyt
-      
+
         # Reading dxs on southern faces, and reconstruct dxn by using dxn
         print('Reconstructing the V-grid northern width using width of T grid')
         self.dxn = np.ones(self.dxt.shape, dtype=np.float) * np.nan   # barrier.n: initialize dxn variable as NaNs
@@ -659,24 +663,23 @@ class RomsCoords(Coords):
             self.dzt = self.dzt[0, :, :, :]
 
             # reads the dze 4d variables with start=[1,1,1,1], end=[1, -1, -1, -1]
-            print('Reading dz variable on western faces: variable %s' %dzw_varname)
-            self.dzw = pypago.pyio.readnc(self.filename, dzw_varname, 4*[1], [1]+3*[-1])
-            
-            print('Reading dz variable on southern faces: variable %s' %dzs_varname)
-            dzs = pypago.pyio.readnc(self.filename, dzs_varname, 4*[1], [1]+3*[-1])
+            print('Reading dz variable on western faces: variable %s' % dictvname['dzw_varname'])
+            self.dzw = pypago.pyio.readnc(self.filename, dictvname['dzw_varname'], 4*[1], [1]+3*[-1])
+
+            print('Reading dz variable on southern faces: variable %s' % dictvname['dzs_varname'])
+            dzs = pypago.pyio.readnc(self.filename, dictvname['dzs_varname'], 4*[1], [1]+3*[-1])
             print('Reconstruction of dz on northern faces from dz on southern faces')
             self.dzn = np.ones(self.dzt.shape, dtype=np.float) * np.nan
             self.dzn[:, :-1, :] = dzs[:, :, :]
 
         else:
-            # if the z_rho variables, the same thing as in the GFDL 
+            # if the z_rho variables, the same thing as in the GFDL
             # model is performed, i.e dzt = dzw = dzn = 1
             print('Initialisation of dzt, dzw and dzn as ')
             print('(roms_nsigma, nlat, lon) arrays of ones')
-            self.dzt = np.ones([roms_nsigma] + list(self.lont.shape))
+            self.dzt = np.ones([dictvname['roms_nsigma']] + list(self.lont.shape))
             self.dzw = self.dzt
             self.dzn = self.dzt
-
 
 
 class OfamCoords(Coords):
@@ -715,10 +718,10 @@ class OfamCoords(Coords):
         """
 
         # extracting the dyw variable
-        self.dyw = pypago.pyio.readnc(self.filename, dyw_varname)
+        self.dyw = pypago.pyio.readnc(self.filename, dictvname['dyw_varname'])
 
         # extracting the dzb variable
-        dzb = pypago.pyio.readnc(self.filename, dzb_varname)
+        dzb = pypago.pyio.readnc(self.filename, dictvname['dzb_varname'])
 
         # calculating the dzt array as the difference between 2 cons levels
         self.dzt = np.diff(np.concatenate(([0], dzb)))
@@ -763,22 +766,28 @@ class MicoCoords(Coords):
         the number of vertical levels, setting
         dzt, dzw and dzn as 1D array of ones
         b) In interpolated z-coordinates: opening of
-        a file with the z-bounds, reconstruction 
-        of dzt. And copy of the dzt values to 
+        a file with the z-bounds, reconstruction
+        of dzt. And copy of the dzt values to
         dzw and dzn (no scale factors)
         """
 
-        from param import micom_isopycnic, micom_nlevels
+        try:
+            from param import micom_isopycnic, micom_nlevels
+        except ImportError:
+            message = 'The "param.py" file is either missing \n'
+            message += 'or does not contain the micom_isopycnic \n'
+            message += 'and micom_nlevels variables.'
+            raise PypagoErrors(message)
 
         # reading cell width at southern face
-        dxs = pypago.pyio.readnc(self.filename, dxs_varname)
+        dxs = pypago.pyio.readnc(self.filename, dictvname['dxs_varname'])
 
         # moving cell width at northern face
         self.dxn = np.zeros(dxs.shape)
         self.dxn[:-1, :] = dxs[1:, :]
 
         # reading the dyw variable
-        self.dyw = pypago.pyio.readnc(self.filename, dyw_varname)
+        self.dyw = pypago.pyio.readnc(self.filename, dictvname['dyw_varname'])
 
         if micom_isopycnic:
             self.dzt = np.ones(micom_nlevels)
@@ -786,7 +795,7 @@ class MicoCoords(Coords):
             self.dzw = np.ones(micom_nlevels)
 
         else:
-            zbounds = pypago.pyio.readnc(zfile, dzt_varname)
+            zbounds = pypago.pyio.readnc(dictvname['zfile'], dictvname['dzt_varname'])
             self.dzt = zbounds[:, 1] - zbounds[:, 0]
             self.dzn = self.dzt.copy()
             self.dzw = self.dzt.copy()
@@ -794,12 +803,12 @@ class MicoCoords(Coords):
 
 def create_coord(modelname, filename):
 
-    """ 
+    """
     Returns a Coord object, depending on the modelname
 
     :param str modelname: Name of the model
     :param str filename: Name of the |netcdf| mesh file
-    
+
     """
 
     # List of possible models
@@ -807,27 +816,28 @@ def create_coord(modelname, filename):
 
     # checking that the model name exists.
     if modelname not in modellist:
-        message = "The %s model name is unrecognized. " %modelname
+        message = "The %s model name is unrecognized. " % modelname
         message += "Possible values are: " + "/".join(modellist) + ". "
         message += "The program will stop"
         raise PypagoErrors(message)
-    
+
     # returning the appropriate Coord class
     # depending on the model name
     if modelname == "NEMO":
-        return NemoCoords(filename)
+        output = NemoCoords(filename)
     elif modelname == "GFDL":
-        return GfdlCoords(filename)
+        output = GfdlCoords(filename)
     elif modelname == "CCSM":
-        return CcsmCoords(filename)
+        output = CcsmCoords(filename)
     elif modelname == "MPIO":
-        return MpioCoords(filename)
+        output = MpioCoords(filename)
     elif modelname == "HYCO":
-        return HycoCoords(filename)
+        output = HycoCoords(filename)
     elif modelname == "ROMS":
-        return RomsCoords(filename)
+        output = RomsCoords(filename)
     elif modelname == "OFAM":
-        return OfamCoords(filename)
+        output = OfamCoords(filename)
     elif modelname == "MICO":
-        return MicoCoords(filename)
+        output = MicoCoords(filename)
 
+    return output

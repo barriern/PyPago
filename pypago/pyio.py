@@ -4,27 +4,29 @@
 Functions/classes dedicated to inputs/outputs using |pypago|
 """
 
+from __future__ import print_function
 import pickle
 import re
 import numpy as np
 from netCDF4 import Dataset
-import pypago.disp
 from netcdftime import utime
+import pypago.disp
+
 
 def read_time(filename, time_varname):
 
     """
-    Reads the time variable of a NetCDF time. 
+    Reads the time variable of a NetCDF time.
     If the time variable contains a 'units'
-    attribute, then a list of 
+    attribute, then a list of
     py:class:`datetime.datetime` is returned.
     Else, a list of floats is returned.
-    
+
     :param str filenaeme: NetCDF file name
     :param str time_varname: Name of the time variable
 
     """
-    
+
     # open the netcdf time and extracts the time
     # netCDF variable
     with Dataset(filename) as fin:
@@ -39,11 +41,11 @@ def read_time(filename, time_varname):
             if hasattr(time, 'calendar'):
                 calendar = getattr(time, 'calendar')
             else:
-                message = 'No "calendar" attribute was found.\n' 
+                message = 'No "calendar" attribute was found.\n'
                 message += 'A Gregorian calendar is assumed.\n'
                 print(message)
                 calendar = 'gregorian'
-            
+
             # conversion from numeric to datetime
             cdftime = utime(units, calendar)
             output = cdftime.num2date(time[:])
@@ -55,21 +57,22 @@ def read_time(filename, time_varname):
             # cf https://ocefpaf.github.io/python4oceanographers/blog/2015/08/10/cf_units_and_time/
             # if isinstance(output[0], 'netcdftime._datetime.datetime'):
             #       output = np.array([d._to_real_datetime() for d in output])
-            
 
         else:
-            # if no units attribute, we return a 
+            # if no units attribute, we return a
             # numpy array of floats
-            message = 'No "units" attribute was found.\n' 
+            message = 'No "units" attribute was found.\n'
             message += 'Time is kept in his numeric form instead of dates.\n'
             output = time[:]
-    
+
     return output
 
+
 def count_ndim(filename, varname):
-    """ 
+
+    """
     Counts the number of dimensions
-    of a variable 
+    of a variable
 
     :param str filename: NetCDF file
     :param str varname: Name of the dimension
@@ -77,7 +80,7 @@ def count_ndim(filename, varname):
     :return: Number of dimensions
 
     """
-    
+
     with Dataset(filename) as fin:
         output = fin.variables[varname].ndim
 
@@ -86,8 +89,8 @@ def count_ndim(filename, varname):
 
 def count_dim(filename, varname):
 
-    """ 
-    Counts the number of elements of a 
+    """
+    Counts the number of elements of a
     netcdf file along a given dimension.
 
     :param str filename: NetCDF file
@@ -229,13 +232,13 @@ def modify_meshfile(filename):
 
             else:
 
-                print 'No umask, tmask, vmask or mbathy variable \
-                detected in the mesh_file -> Unchanged mesh file'
+                print('No umask, tmask, vmask or mbathy variable ' +
+                      'detected in the mesh_file -> Unchanged mesh file')
 
         else:
 
-            print 'The e3u, e3v and e3t arrays seem already masked -> \
-            Unchanged mesh file'
+            print('The e3u, e3v and e3t arrays seem already masked -> ' +
+                  'Unchanged mesh file')
 
         e3u = np.ma.masked_where(e3u != e3u, e3u)
         e3v = np.ma.masked_where(e3v != e3v, e3v)
@@ -244,7 +247,6 @@ def modify_meshfile(filename):
         fin.variables['e3u'][:] = e3u
         fin.variables['e3v'][:] = e3v
         fin.variables['e3t'][:] = e3t
-
 
 
 def read_bg_file(finname):
@@ -342,7 +344,6 @@ def readnc(filename, varname, start=None, end=None, stride=None):
         else:
             output = ncfile.variables[varname][:]
 
-
     return output
 
 
@@ -363,16 +364,15 @@ def _readnc_span(ncfile, varname, start, end, stride):
 
     # checking that the sizes of the arguments are consistent with the var dimension
     if vari.ndim != len(start):
-        message = "The size of the start argument is inconsistent with the "+ \
-            " variable dimension" 
+        message = "The size of the start argument is inconsistent with the variable dimension"
         error = pypago.disp.PypagoErrors(message)
         raise error
 
-    # loop over the end array: where -1, 
+    # loop over the end array: where -1,
     # we read to the end of the file
     for idim in xrange(0, len(end)):
         if end[idim] == -1:
-            end[idim] = varshape[idim] 
+            end[idim] = varshape[idim]
 
     if len(start) == 1:
         output = ncfile.variables[varname][start[0]:end[0]:stride[0]]
@@ -496,25 +496,24 @@ def save(dictio, filename):
 def check_ncvar_exist(filename, varname):
 
     """
-    Determines whether a variable exists in a NetCDF file 
+    Determines whether a variable exists in a NetCDF file
 
     :param str filename: NetCDF filename
     :param str varname: NetCDF variable name
     :return: True if the variable is in the file, else False
     :rtype: bool
-    
+
     """
 
     with Dataset(filename) as fin:
         output = varname in fin.variables
-    
+
     return output
 
 
 if __name__ == '__main__':
 
-    filename = "examples/data/Omon_CNRM-CM5_piControl_gridT.nc"
-    varname = 'time'
-    dates = read_time(filename, varname)
-    print dates
-
+    FILENAME_TEST = "examples/data/Omon_CNRM-CM5_piControl_gridT.nc"
+    VARNAME_TEST = 'time'
+    DATES = read_time(FILENAME_TEST, VARNAME_TEST)
+    print(DATES)

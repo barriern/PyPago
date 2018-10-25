@@ -6,9 +6,11 @@ indexes of a section or area within a list) and the class that allows to define
 |matlab|-like structures
 """
 
-from pypago.disp import PypagoErrors
+from __future__ import print_function
 import inspect
 import numpy as np
+from pypago.disp import PypagoErrors
+
 
 def extract_mask(array):
 
@@ -17,11 +19,12 @@ def extract_mask(array):
     output = (np.isnan(array) | np.ma.getmaskarray(array))
     return output
 
+
 def make_percentile_cmap(array, perc):
 
     """
     Returns colormaps limits using percentiles. The
-    minimum color value. 
+    minimum color value.
 
     :param array numpy.array: Input array
 
@@ -29,7 +32,7 @@ def make_percentile_cmap(array, perc):
 
     :returns: A tuple containing the lower and upper colorbar limits
      associated with the array percentiles.
-     
+
     :rtype: tuple
 
     """
@@ -39,25 +42,26 @@ def make_percentile_cmap(array, perc):
 
     # mask data where missing and extracts only unmasked
     # data
-    array = np.ma.masked_where(array!=array, array)
-    array = array[np.ma.getmaskarray(array)==False]
+    array = np.ma.masked_where(array != array, array)
+    array = array[np.logical_not(np.ma.getmaskarray(array))]
 
-    if len(array) == 0:
+    if array.size == 0:
         cmin, cmax = None, None
-    
+
     else:
         # computes the percentiles
         cmin = np.percentile(array, perc)
         cmax = np.percentile(array, 100 - perc)
 
         # rounds the percentiles (unnecessary???)
-        #cmin = unit_round(cmin, "floor")
-        #cmax = unit_round(cmax, "ceil")
-    
+        # cmin = unit_round(cmin, "floor")
+        # cmax = unit_round(cmax, "ceil")
+
     return cmin, cmax
 
+
 def extract_str(attrnames, dataclass):
-    
+
     """
     Extract a string which will be used in the __str__ method.
     The string list the attributes and display either their shape
@@ -69,16 +73,17 @@ def extract_str(attrnames, dataclass):
     :rtype: str
 
     """
-    
+
     output = ''
     for attr in attrnames:
         val = getattr(dataclass, attr)
         if isinstance(val, np.ndarray):
-            output += '  -%s: %s\n' %(attr, str(val.shape))
+            output += '  -%s: %s\n' % (attr, str(val.shape))
         else:
-            output += '  -%s: %s\n' %(attr, str(val))
+            output += '  -%s: %s\n' % (attr, str(val))
 
     return output
+
 
 def extract_attrlist(dataclass):
 
@@ -90,9 +95,9 @@ def extract_attrlist(dataclass):
     :return: A list of strings
     :rtype: list
     """
-    
+
     attrnames = ([attr for attr in dir(dataclass) if attr[0] != '_'])
-    attrnames = [attr for attr in attrnames if not(inspect.ismethod(getattr(dataclass, attr)))]
+    attrnames = [attr for attr in attrnames if not inspect.ismethod(getattr(dataclass, attr))]
     return attrnames
 
 

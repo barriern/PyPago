@@ -1,15 +1,15 @@
 """ Module for the manipulation of section endpoints and gridded section """
 
 import numpy as np
-import pypago.toolsec as toolsec
-from sample_param import ee
+import pylab as plt
 try:
     from param import ee
-except:
-    pass
-import pylab as plt
+except ImportError:
+    from pypago.sample_param import ee
+import pypago.toolsec as toolsec
 from pypago.disp import PypagoErrors
 import pypago.misc
+
 
 class Section(object):
 
@@ -23,7 +23,7 @@ class Section(object):
         :param numpy.array lon: Section endpoints longitudes
         :param numpy.array lat: Section endpoints latitudes
         :param numpy.array dire: Section segments directions
-        
+
         """
         self.name = name
         self.lat = np.array(lat)
@@ -34,28 +34,28 @@ class Section(object):
 
         """ Redefinition of the string function """
 
-        output = 'Section %s\n' %self.name
-        output += '    -lon: %s\n' %self.lon
-        output += '    -lat: %s\n' %self.lat
-        output += '    -dire: %s\n' %self.dire
+        output = 'Section %s\n' % self.name
+        output += '    -lon: %s\n' % self.lon
+        output += '    -lat: %s\n' % self.lat
+        output += '    -dire: %s\n' % self.dire
         return output
 
-    
+
 #    @property
 #    def name(self):
 #        """ Section name """
 #        return self.__name
-#    
+#
 #    @property
 #    def lon(self):
 #        """ Section endpoints longitude """
 #        return self.__lon
-#    
+#
 #    @property
 #    def lat(self):
 #        """ Section endpoints latitude """
 #        return self.__lat
-#    
+#
 #    @property
 #    def dire(self):
 #        """ Section segments direction """
@@ -68,7 +68,7 @@ class Section(object):
 #        :param str name: Section name
 #        '''
 #        self.__name = np.array(name)
-#    
+#
 #    @lon.setter
 #    def lon(self, lon):
 #        '''
@@ -76,7 +76,7 @@ class Section(object):
 #        :param str lon: Section lon
 #        '''
 #        self.__lon = np.array(lon)
-#    
+#
 #    @lat.setter
 #    def lat(self, lat):
 #        '''
@@ -84,7 +84,7 @@ class Section(object):
 #        :param str lat: Section lat
 #        '''
 #        self.__lat = np.array(lat)
-#    
+#
 #    @dire.setter
 #    def dire(self, dire):
 #        '''
@@ -94,13 +94,12 @@ class Section(object):
 #        self.__dire = np.array(dire)
 
 
-
 class GridSection(object):
 
     """ Gridded section object """
-    
+
     def __init__(self, grid, section):
-        
+
         """
 
         :param pypago.grid.Grid grid: Model grid
@@ -148,13 +147,12 @@ class GridSection(object):
             message += 'the case.'
             raise PypagoErrors(message)
 
-
     def __str__(self):
 
         """ Redefinition of the str function """
-        
-        output = 'Gridded section, %s model:\n' %self.modelname
-        
+
+        output = 'Gridded section, %s model:\n' % self.modelname
+
         attrnames = pypago.misc.extract_attrlist(self)
         output += pypago.misc.extract_str(attrnames, self)
 
@@ -202,9 +200,8 @@ class GridSection(object):
             self.dire = dire
             self.name = section.name
 
-        except:
+        except IOError:
             pass
-
 
     def _finalisesection(self, grid):
 
@@ -242,11 +239,11 @@ class GridSection(object):
                                                  self.i[l], self.j[l])
 
                 [faces, newveci, newvecj, orientation] = toolsec.facesinsec(veci, vecj, self.dire[l-1])
-                
-                [finalfaces, finalveci, finalvecj, finalorient] = \
-                        toolsec.consec(self.veci, self.vecj, self.faces,
-                                       self.orient, newveci, newvecj, faces,
-                                       orientation)
+
+                [finalfaces, finalveci, finalvecj, finalorient] = toolsec.consec(self.veci, self.vecj, self.faces,
+                                                                                 self.orient, newveci, newvecj,
+                                                                                 faces, orientation)
+
                 self.veci = finalveci
                 self.vecj = finalvecj
                 self.faces = finalfaces
@@ -270,11 +267,11 @@ class GridSection(object):
         self.lengthvect = toolsec.lengthinsec(self.veci, self.vecj, self.faces,
                                               grid.dyw, grid.dxn)
 
-        #if 'e3t_ps' in grid.__dict__.keys():
-        #self.depthvect = _depthinsec_e3tps(self.veci, self.vecj,
-        #self.faces, grid)
-        #self.areavect = self.depthvect*np.tile(np.transpose(self.lengthvect[:, np.newaxis]), (grid.areaW.shape[0], 1))
-        #else:
+        # if 'e3t_ps' in grid.__dict__.keys():
+        # self.depthvect = _depthinsec_e3tps(self.veci, self.vecj,
+        # self.faces, grid)
+        # self.areavect = self.depthvect*np.tile(np.transpose(self.lengthvect[:, np.newaxis]), (grid.areaW.shape[0], 1))
+        # else:
         self.areavect = toolsec.areainsec(self.veci, self.vecj, self.faces,
                                           grid.areaw, grid.arean)
         self.depthvect = toolsec.areainsec(self.veci, self.vecj, self.faces,
@@ -287,11 +284,6 @@ class GridSection(object):
             self.lvect = np.append(self.lvect, self.lvect[l-1] +
                                    toolsec.distance(grid.latt[vecj[l], veci[l]], grid.lont[vecj[l], veci[l]],
                                                     grid.latt[vecj[l-1], veci[l-1]], grid.lont[vecj[l-1], veci[l-1]], ee))
-
-        nz = grid.areaw.shape[0]
-        #self.vect = np.nan + np.ones((1, nz, len(self.veci)))
-        #self.vecs = np.nan + np.ones((1, nz, len(self.veci)))
-        #self.vecv = np.nan + np.ones((1, nz, len(self.veci)))
 
     def plotsecfaces(self, axes=None, **kwargs):
 
@@ -358,15 +350,15 @@ class GridSection(object):
                 else:
                     axes.scatter(self.veci[indl]-.75, self.vecj[indl],
                                  lw, marker='.', color=col)
-        
-        axes.text(np.mean(self.veci), np.mean(self.vecj), self.name, color=col) 
+
+        axes.text(np.mean(self.veci), np.mean(self.vecj), self.name, color=col)
 
         return col
 
 
 def extract_grid_sections(grid, sectionslist):
 
-    """ 
+    """
     Extract a list of GridSection objects from a grid
     object (containing coordinates and scale factors) and
     a list of section endpoints.
@@ -381,18 +373,17 @@ def extract_grid_sections(grid, sectionslist):
      (pypago.sections.GridSection objects) and the indexes of
      the discarded sections (i.e. sections out of the domain)
 
-    """ 
+    """
 
     # if the input is a section, converion into a list
     if isinstance(sectionslist, Section):
         sectionslist = [sectionslist]
-    
-    if not(isinstance(sectionslist, list)):
+
+    if not isinstance(sectionslist, list):
         message = 'The sectionslist argument must either be a single or a list of '
         message += 'pypago.sections.Section objects. This program will '
         message += 'be stopped.'
         raise PypagoErrors(message)
-
 
     output = []
     badsection = []
@@ -404,6 +395,7 @@ def extract_grid_sections(grid, sectionslist):
             badsection.append(secind)
 
     return output, badsection
+
 
 def correct_gridsec(gridsec, secname, offset, position):
 
@@ -427,7 +419,7 @@ def correct_gridsec(gridsec, secname, offset, position):
        or last (position='end') points.
 
     .. warning::
-    
+
         The input list is modified
 
     """
@@ -456,5 +448,3 @@ def correct_gridsec(gridsec, secname, offset, position):
         gridsec[nw].lengthvect = gridsec[nw].lengthvect[offset:]
 
     return gridsec
-
-
