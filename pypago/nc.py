@@ -6,12 +6,20 @@ conversion of |pypago| outputs into NetCDF files` \
 to :file:`.nc` files
 """
 
-from netCDF4 import Dataset
+from __future__ import print_function
 import numpy as np
-import pypago.misc
+from netcdftime import utime
+from netCDF4 import Dataset
+from pypago.misc import PypagoErrors
 import pypago.pyio
 import pypago.disp
-from netcdftime import utime
+from pypago.sample_param import dictvname
+try:
+    from param import dictvname2
+    dictvname.update(dictvname2)
+except ImportError:
+    pass
+
 
 def gridsec_tonc(finname, varname, section_names=None, units='days since 1900-01-01 00:00:00', calendar='gregorian'):
 
@@ -54,11 +62,11 @@ def gridsec_tonc(finname, varname, section_names=None, units='days since 1900-01
     else:
 
         # Conversion of section_names into list
-        if not(isinstance(section_names, 'list')):
+        if not isinstance(section_names, 'list'):
             section_names = [section_names]
 
         print(r'Processing of the section list %s'
-                                % section_names)
+              % section_names)
 
         for secnames in section_names:
             indice_sec = pypago.misc.findsecnum(modelsec, secnames)
@@ -93,8 +101,8 @@ def gridvol_tonc(finname, varname, domain_names=None, units='days since 1900-01-
     """
 
     modeldom = pypago.pyio.load(finname)
-    #modeldom = data['MODEL_areas']
-    #modeltime = data['MODEL_time']
+    # modeldom = data['MODEL_areas']
+    # modeltime = data['MODEL_time']
 
     print(r'Conversion of the %s file into netcdf' % finname)
     print(r'==============================================')
@@ -108,13 +116,13 @@ def gridvol_tonc(finname, varname, domain_names=None, units='days since 1900-01-
             print('domain %s: done' % domint.name)
 
     else:
-        
+
         # Conversion of domain_names into list
-        if not(isinstance(domain_names, 'list')):
+        if not isinstance(domain_names, 'list'):
             domain_names = [domain_names]
 
         print(r'Processing of the domain list %s'
-                                % domain_names)
+              % domain_names)
 
         for domnames in domain_names:
 
@@ -142,8 +150,7 @@ def secind_tonc(finname, section_names=None):
     sectionind = data['MODEL_indices']
     modeltime = data['MODEL_time']
 
-    print(r'Conversion of the %s file into netcdf' %
-                            finname)
+    print(r'Conversion of the %s file into netcdf' % finname)
     print(r'==========================================')
 
     if section_names is None:
@@ -155,8 +162,7 @@ def secind_tonc(finname, section_names=None):
             print('section %s: done' % secint.name)
 
     else:
-        print(r'Processing of the section list %s'
-                                % section_names)
+        print(r'Processing of the section list %s' % section_names)
 
         for secnames in section_names:
 
@@ -198,7 +204,7 @@ def sections_tonc(finname, section_names=None):
         pagosections = pypago.pyio.load(finname)
     except IOError:
         message = r'filename {0} not found'.format(finname)
-        error = Errors(message)
+        error = PypagoErrors(message)
         raise error
 
     print(r'Conversion of the %s file into netcdf' % finname)
@@ -214,8 +220,7 @@ def sections_tonc(finname, section_names=None):
 
     else:
 
-        print(r'Processing of the section list %s'
-                                % section_names)
+        print(r'Processing of the section list %s' % section_names)
 
         for secnames in section_names:
 
@@ -223,7 +228,7 @@ def sections_tonc(finname, section_names=None):
                 indice_sec = pypago.misc.findsecnum(pagosections, secnames)
             except ValueError:
                 message = r'Can not produce NetCDF file'
-                error = Errors(message)
+                error = PypagoErrors(message)
                 raise error
 
             secint = pagosections[indice_sec]
@@ -249,8 +254,7 @@ def _volind_tonc(finname, domain_names=None):
     volumeind = data['MODEL_volumes']
     modeltime = data['MODEL_time']
 
-    print(r'Conversion of the %s file into netcdf'
-                            % finname)
+    print(r'Conversion of the %s file into netcdf' % finname)
     print(r'==========================================')
 
     if domain_names is None:
@@ -263,8 +267,7 @@ def _volind_tonc(finname, domain_names=None):
 
     else:
 
-        print(r'Processing of the domain list %s'
-                                % domain_names)
+        print(r'Processing of the domain list %s' % domain_names)
 
         for domnames in domain_names:
             indice_dom = pypago.misc.finddomnum(volumeind, domnames)
@@ -289,7 +292,7 @@ def _write_gridsec_netcdf(finname, secint, varname, units, calendar):
        'vecv'. If None, all are saved)
 
     """
-    
+
     timename = dictvname['time_varname']
 
     name = secint.name
@@ -314,7 +317,7 @@ def _write_gridsec_netcdf(finname, secint, varname, units, calendar):
 
         # if the variable is not made of numbers: conversion into
         # numerical time
-        if not(isinstance(modeltime[0], (int, long, float))):
+        if not isinstance(modeltime[0], (int, long, float)):
             cdftime = utime(units, calendar)
             modeltime = cdftime.date2num(modeltime)
             fout.variables[timename].calendar = calendar
@@ -344,7 +347,7 @@ def _write_gridsec_netcdf(finname, secint, varname, units, calendar):
     fout.variables['faces'][:] = facesout
     fout.variables['faces'].description = '1 for N, 2 for W'
 
-    if not(isinstance(varname, list)):
+    if not isinstance(varname, list):
         varname = [varname]
 
     for var in varname:
@@ -368,7 +371,7 @@ def _write_gridvol_netcdf(finname, domint, varname, units, calendar):
     :param str varname: variable to save in the file ('salinity' or
        'temperature'). If None, both are saved
     """
-    
+
     timename = dictvname['time_varname']
 
     nz, npoints = domint.volume.shape
@@ -390,7 +393,7 @@ def _write_gridvol_netcdf(finname, domint, varname, units, calendar):
 
         # if the variable is not made of numbers: conversion into
         # numerical time
-        if not(isinstance(modeltime[0], (int, long, float))):
+        if not isinstance(modeltime[0], (int, long, float)):
             cdftime = utime(units, calendar)
             modeltime = cdftime.date2num(modeltime)
             fout.variables[timename].calendar = calendar
@@ -401,13 +404,13 @@ def _write_gridvol_netcdf(finname, domint, varname, units, calendar):
     fout.createVariable('indj', 'i', ('points', ))
     fout.createVariable('volume', 'f', ('z', 'points', ))
     fout.createVariable('surface', 'f', ('points', ))
-    
+
     fout.variables['indi'][:] = domint.i
     fout.variables['indj'][:] = domint.j
     fout.variables['volume'][:] = domint.volume
     fout.variables['surface'][:] = domint.surface
-   
-    # If the domain has been defined from sections, 
+
+    # If the domain has been defined from sections,
     # creation of section dimension and variables
     if domint.secnames is not None:
         nsec = len(domint.secnames)
@@ -423,14 +426,14 @@ def _write_gridvol_netcdf(finname, domint, varname, units, calendar):
     # fout.variables['mask'][:] = domint.mask
     # fout.createVariable('mask', 'i', ('points', ))
 
-    if not(isinstance(varname, list)):
+    if not isinstance(varname, list):
         varname = [varname]
 
     for var in varname:
-        if(domint.__dict__[var].ndim == 3):
+        if domint.__dict__[var].ndim == 3:
             fout.createVariable(var, 'f', (timename, 'z', 'points'))
             fout.variables[var][:] = domint.__dict__[var]
-        elif(domint.__dict__[var].ndim == 2):
+        elif domint.__dict__[var].ndim == 2:
             fout.createVariable(var, 'f', (timename, 'points'))
             fout.variables[var][:] = domint.__dict__[var]
         else:

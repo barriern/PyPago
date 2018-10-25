@@ -5,15 +5,14 @@ This function allows to extract spatial domains, by giving its section
 boundaries.
 
 """
-    
-from matplotlib.colors import ListedColormap
+
+from __future__ import print_function
+import numpy as np
 import pypago.plot
 import pypago.pyio
 import pypago.misc
 from pypago.disp import PypagoErrors
-import pylab as plt
-import numpy as np
-import scipy.misc as misc
+
 
 class Areas(object):
 
@@ -24,13 +23,13 @@ class Areas(object):
         self.name = name
         self.i = i
         self.j = j
-        
+
         self.mask = np.zeros(grid.mask.shape)
         self.mask[i, j] = 1
 
         self.volume = grid.volume[:, i, j]
         self.surface = grid.surface[i, j]
-        
+
         self.secnames = secnames
         self.signs = signs
 
@@ -43,18 +42,17 @@ class Areas(object):
 
     def __str__(self):
 
-        output = 'Domain area, %s model:\n' %self.modelname
-        
+        output = 'Domain area, %s model:\n' % self.modelname
+
         attrnames = pypago.misc.extract_attrlist(self)
         output += pypago.misc.extract_str(attrnames, self)
 
         return output
 
-
     def finalplot(self, grid, gridsec=None, ax=None):
 
         """
-        Draws the areas mask. 
+        Draws the areas mask.
         It draws the model mask and the model sections,
         and it fills the mask of the area
 
@@ -66,12 +64,13 @@ class Areas(object):
 
         pypago.plot.plot_dom_mask(grid, gridsec, self.mask, ax=ax)
 
+
 def extract_dom_from_pol(grid, lonpol, latpol):
 
     """
     Extracts the i, j indexes of the grid domain
     by provinding the longitudes and latitudes of
-    a polygon. 
+    a polygon.
 
     :param pypago.grid.Grid grid: Input grid
     :param numpy.array lonpol: Polygon longitude
@@ -99,11 +98,11 @@ def extract_dom_from_pol(grid, lonpol, latpol):
     if len(lonpol) != len(latpol):
         message = 'The lonpol and latpol must have the same length.\n'
         message += 'Currently:\n'
-        message += ' -len(lonpol) = %3d\n' %len(lonpol)
-        message += ' -len(latpol) = %3d\n' %len(latpol)
+        message += ' -len(lonpol) = %3d\n' % len(lonpol)
+        message += ' -len(latpol) = %3d\n' % len(latpol)
         message += 'This program will be stopped.'
         raise PypagoErrors(message)
-    
+
     nlat, nlon = grid.latt.shape
 
     # creation the input of the path.Path command:
@@ -111,10 +110,10 @@ def extract_dom_from_pol(grid, lonpol, latpol):
     path_input = [(lontemp, lattemp) for lontemp, lattemp in zip(lonpol, latpol)]
     pathobj = Path(path_input)
 
-    mask = np.array([pathobj.contains_point((lontemp, lattemp)) for lontemp,lattemp in zip(np.ravel(grid.lont), np.ravel(grid.latt))])
+    mask = np.array([pathobj.contains_point((lontemp, lattemp)) for lontemp, lattemp in zip(np.ravel(grid.lont), np.ravel(grid.latt))])
 
     mask = np.reshape(mask, (nlat, nlon))
 
-    i, j = np.nonzero(mask==1)
+    i, j = np.nonzero(mask == 1)
 
     return i, j
