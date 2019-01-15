@@ -8,7 +8,7 @@ import pypago.pyio
 import pypago.misc
 from pypago.sample_param import dictvname
 try:
-    from param import dictvname2
+    from param import dictvname as dictvname2
     dictvname.update(dictvname2)
 except ImportError:
     pass
