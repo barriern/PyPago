@@ -276,6 +276,7 @@ def read_bg_file(finname):
     # barrier.n --- modified 2015-08-13
     # no more access to forbidden variable _name
     with Dataset(finname, 'r') as fin:
+
         dimnames = fin.dimensions.keys()
 
         for varname in fin.variables.keys():
@@ -314,6 +315,11 @@ def readnc(filename, varname, start=None, end=None, stride=None):
 
     with Dataset(str(filename)) as ncfile:
 
+        try:
+            ncfile.set_auto_mask(False)
+        except:
+            pass
+
         if (start is not None) & (end is not None):
 
             start = np.array(start)
@@ -344,7 +350,26 @@ def readnc(filename, varname, start=None, end=None, stride=None):
         else:
             output = ncfile.variables[varname][:]
 
+        fill_val = _get_fill_val(ncfile, varname)
+
+        if fill_val is not None:
+            output = np.ma.masked_where(output == fill_val, output)
+
     return output
+
+
+def _get_fill_val(ncfile, varname):
+
+    var = ncfile.variables[varname]
+
+    if hasattr(var, '_FillValue'):
+        fill_val = getattr(var, '_FillValue')
+    elif hasattr(var, 'missing_value'):
+        fill_val = getattr(var, 'missing_value')
+    else:
+        fill_val = None
+
+    return fill_val
 
 
 def _readnc_span(ncfile, varname, start, end, stride):
