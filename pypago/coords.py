@@ -7,6 +7,7 @@ from pypago.disp import PypagoErrors
 import pypago.pyio
 import pypago.misc
 from pypago.sample_param import dictvname
+import xarray as xr
 try:
     from param import dictvname as dictvname2
     dictvname.update(dictvname2)
@@ -40,7 +41,7 @@ class Coords(object):
 
     '''
 
-    def __init__(self, filename):
+    def __init__(self, filename, **kwargs):
 
         '''
         Initialisation of the Class. It initialises the filename attribute
@@ -69,16 +70,16 @@ class Coords(object):
 
         # reads the lon/lat variables from the file
         print('Reading longitude: variable %s' % dictvname['lon_varname'])
-        self.lont = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['lon_varname']))
+        self.lont = pypago.pyio.readnc(self.filename, dictvname['lon_varname'], **kwargs).squeeze()
 
         print('Reading latitude: variable %s' % dictvname['lat_varname'])
-        self.latt = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['lat_varname']))
+        self.latt = pypago.pyio.readnc(self.filename, dictvname['lat_varname'], **kwargs).squeeze()
 
         # Check whether the bathy variable exists.
         # If so, we define the bathy attribute. Else, remains None
         if 'bathy_varname' in dictvname:
             print('Reading bathymetry: variable %s' % dictvname['bathy_varname'])
-            self.bathy = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['bathy_varname']))
+            self.bathy = pypago.pyio.readnc(self.filename, dictvname['bathy_varname'], **kwargs).squeeze()
         else:
             print('No bathymetry is read')
 
@@ -86,29 +87,29 @@ class Coords(object):
         # If so, we define the bathy attribute. Else, remains None
         if 'tmask_varname' in dictvname:
             print('Reading T-grid mask: variable %s' % dictvname['tmask_varname'])
-            self.mask = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['tmask_varname']))
+            self.mask = pypago.pyio.readnc(self.filename, dictvname['tmask_varname'], **kwargs)
 
         # Cell meridional and zonal widths at center
         print('Reading T-grid zonal width: variable %s' % dictvname['dxt_varname'])
-        self.dxt = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dxt_varname']))
+        self.dxt = pypago.pyio.readnc(self.filename, dictvname['dxt_varname'], **kwargs)
 
         print('Reading T-grid meridional width: variable %s' % dictvname['dyt_varname'])
-        self.dyt = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dyt_varname']))
+        self.dyt = pypago.pyio.readnc(self.filename, dictvname['dyt_varname'], **kwargs)
 
         # Cell meridional width at eastern face of cell
         if 'dye_varname' in dictvname:
             print('Reading V-grid eastern meridional width: variable %s' % dictvname['dye_varname'])
-            self.dye = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dye_varname']))
+            self.dye = pypago.pyio.readnc(self.filename, dictvname['dye_varname'], **kwargs)
 
         # Cell zonal width at northern face of cell
         if 'dxn_varname' in dictvname:
             print('Reading U-grid northern meridional width: variable %s' % dictvname['dxn_varname'])
-            self.dxn = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dxn_varname']))
+            self.dxn = pypago.pyio.readnc(self.filename, dictvname['dxn_varname'], **kwargs)
 
         # Cell height at center
         if 'dzt_varname' in dictvname:
             print('Reading T-grid height: variable %s' % dictvname['dzt_varname'])
-            self.dzt = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dzt_varname']))
+            self.dzt = pypago.pyio.readnc(self.filename, dictvname['dzt_varname'], **kwargs)
 
     def __str__(self):
 
@@ -153,24 +154,24 @@ class NemoCoords(Coords):
 
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename, **kwargs):
 
         '''
         Initialisation of the NemoCoords class.
         '''
 
         # Initialisation through the mother class
-        super(NemoCoords, self).__init__(filename)
+        super(NemoCoords, self).__init__(filename, **kwargs)
 
         self.modelname = 'NEMO'
 
         # reading coordinates
-        self.read_coord()
+        self.read_coord(**kwargs)
 
         # reading scale factors
-        self.read_scalefactors()
+        #self.read_scalefactors()
 
-    def read_coord(self):
+    def read_coord(self, **kwargs):
 
         """
         Processes NEMO file coordinates (bathy, longitude, latitude, mask).
@@ -183,7 +184,7 @@ class NemoCoords(Coords):
             # If bathymetry is not read directly from the file, it is
             # reconstructed from the 1D depth and mbathy arrays
             print('Reading 1D deptha array: variable %s' % dictvname['depth_varname'])
-            deptht = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['depth_varname']))
+            deptht = pypago.pyio.readnc(self.filename, dictvname['depth_varname'], **kwargs).squeeze()
 
             if deptht.ndim != 1:
                 message = 'The deptht array must be 1D. Currently, ' + \
@@ -193,15 +194,14 @@ class NemoCoords(Coords):
             # extraction of the mbathy array
             print('Reading mbathy: variable %s' % dictvname['mbathy_varname'])
             mbathy = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['mbathy_varname']))
-            mbathy = mbathy.astype(np.int)
-            mbathy[mbathy < 0] = 0
+            #mbathy[mbathy < 0] = 0
 
             # reconstruction of the bathy from deptht and mbathy
             print('Reconstruction of bathy from mbathy and depth')
-            self.bathy = deptht[mbathy]
+            self.bathy = xr.DataArray(deptht.values[mbathy.values], dims=['y', 'x'])
 
         # Extraction of the surface (land sea) tmask array
-        self.mask = np.squeeze(self.mask[0, :, :])
+        self.mask = self.mask[:, 0, :, :]
 
     def read_scalefactors(self):
 
@@ -801,7 +801,7 @@ class MicoCoords(Coords):
             self.dzw = self.dzt.copy()
 
 
-def create_coord(modelname, filename):
+def create_coord(modelname, filename, **kwargs):
 
     """
     Returns a Coord object, depending on the modelname
@@ -823,8 +823,9 @@ def create_coord(modelname, filename):
 
     # returning the appropriate Coord class
     # depending on the model name
+    print('kwargs ', kwargs)
     if modelname == "NEMO":
-        output = NemoCoords(filename)
+        output = NemoCoords(filename, **kwargs)
     elif modelname == "GFDL":
         output = GfdlCoords(filename)
     elif modelname == "CCSM":
