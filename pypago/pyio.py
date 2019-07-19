@@ -11,6 +11,7 @@ import numpy as np
 from netCDF4 import Dataset
 from netcdftime import utime
 import pypago.disp
+import xarray as xr
 
 
 def read_time(filename, time_varname):
@@ -292,7 +293,7 @@ def read_bg_file(finname):
     return xcoord, ycoord, toplot
 
 
-def readnc(filename, varname, start=None, end=None, stride=None):
+def readnc(filename, varname, start=None, end=None, stride=None, **kwargs):
 
     """
     Reads a variable from a |netcdf| file.
@@ -313,12 +314,8 @@ def readnc(filename, varname, start=None, end=None, stride=None):
 
     """
 
-    with Dataset(str(filename)) as ncfile:
-
-        try:
-            ncfile.set_auto_mask(False)
-        except:
-            pass
+    # ncfile is now a xarray dataset
+    with xr.open_dataset(str(filename), **kwargs) as ncfile:
 
         if (start is not None) & (end is not None):
 
@@ -348,12 +345,13 @@ def readnc(filename, varname, start=None, end=None, stride=None):
             output = _readnc_span(ncfile, varname, start, end, stride)
 
         else:
-            output = ncfile.variables[varname][:]
+            # output is now a xarray.Variable object
+            output = ncfile.variables[varname]
 
-        fill_val = _get_fill_val(ncfile, varname)
+        #fill_val = _get_fill_val(ncfile, varname)
 
-        if fill_val is not None:
-            output = np.ma.masked_where(output == fill_val, output)
+        #if fill_val is not None:
+        #   output = np.ma.masked_where(output == fill_val, output)
 
     return output
 
@@ -384,6 +382,7 @@ def _readnc_span(ncfile, varname, start, end, stride):
     :param numpy.array stride: array that contains the stride indexes
     """
 
+    # ncfile is an xarray dataset object
     vari = ncfile.variables[varname]
     varshape = vari.shape
 
@@ -400,19 +399,19 @@ def _readnc_span(ncfile, varname, start, end, stride):
             end[idim] = varshape[idim]
 
     if len(start) == 1:
-        output = ncfile.variables[varname][start[0]:end[0]:stride[0]]
+        output = vari[start[0]:end[0]:stride[0]]
     elif len(start) == 2:
-        output = ncfile.variables[varname][start[0]:end[0]:stride[0],
-                                           start[1]:end[1]:stride[1]]
+        output = vari[start[0]:end[0]:stride[0],
+                      start[1]:end[1]:stride[1]]
     elif len(start) == 3:
-        output = ncfile.variables[varname][start[0]:end[0]:stride[0],
-                                           start[1]:end[1]:stride[1],
-                                           start[2]:end[2]:stride[2]]
+        output = vari[start[0]:end[0]:stride[0],
+                      start[1]:end[1]:stride[1],
+                      start[2]:end[2]:stride[2]]
     elif len(start) == 4:
-        output = ncfile.variables[varname][start[0]:end[0]:stride[0],
-                                           start[1]:end[1]:stride[1],
-                                           start[2]:end[2]:stride[2],
-                                           start[3]:end[3]:stride[3]]
+        output = vari[start[0]:end[0]:stride[0],
+                      start[1]:end[1]:stride[1],
+                      start[2]:end[2]:stride[2],
+                      start[3]:end[3]:stride[3]]
 
     else:
         raise IOError('Number of dimensions %d not implemented' % (len(start)))
