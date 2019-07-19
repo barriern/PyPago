@@ -346,7 +346,7 @@ def readnc(filename, varname, start=None, end=None, stride=None, **kwargs):
 
         else:
             # output is now a xarray.Variable object
-            output = ncfile.variables[varname]
+            output = ncfile[varname]
 
         #fill_val = _get_fill_val(ncfile, varname)
 
@@ -383,7 +383,7 @@ def _readnc_span(ncfile, varname, start, end, stride):
     """
 
     # ncfile is an xarray dataset object
-    vari = ncfile.variables[varname]
+    vari = ncfile[varname]
     varshape = vari.shape
 
     # checking that the sizes of the arguments are consistent with the var dimension
