@@ -70,16 +70,16 @@ class Coords(object):
 
         # reads the lon/lat variables from the file
         print('Reading longitude: variable %s' % dictvname['lon_varname'])
-        self.lont = pypago.pyio.readnc(self.filename, dictvname['lon_varname'], **kwargs).squeeze()
+        self.lont = pypago.pyio.readnc(self.filename, dictvname['lon_varname'], **kwargs)
 
         print('Reading latitude: variable %s' % dictvname['lat_varname'])
-        self.latt = pypago.pyio.readnc(self.filename, dictvname['lat_varname'], **kwargs).squeeze()
+        self.latt = pypago.pyio.readnc(self.filename, dictvname['lat_varname'], **kwargs)
 
         # Check whether the bathy variable exists.
         # If so, we define the bathy attribute. Else, remains None
         if 'bathy_varname' in dictvname:
             print('Reading bathymetry: variable %s' % dictvname['bathy_varname'])
-            self.bathy = pypago.pyio.readnc(self.filename, dictvname['bathy_varname'], **kwargs).squeeze()
+            self.bathy = pypago.pyio.readnc(self.filename, dictvname['bathy_varname'], **kwargs)
         else:
             print('No bathymetry is read')
 
@@ -131,9 +131,21 @@ class Coords(object):
         if ax is None:
             ax = plt.gca()
 
-        cs = ax.contour(self.mask, levels=[1 - np.spacing(1), 1], colors='k')
-        ax.set_xlim(0, self.mask.shape[1]-1)
-        ax.set_ylim(0, self.mask.shape[0]-1)
+        cs = ax.imshow(self.mask[:, 0, :, :].squeeze(), origin='lower', interpolation='none')
+        plt.colorbar(cs)
+
+        return cs
+    
+    def plot_bathy(self, ax=None):
+
+        ''' Contours the mask attribute '''
+
+        if ax is None:
+            ax = plt.gca()
+        ax.set_facecolor('black')
+
+        cs = ax.imshow(self.bathy.squeeze(), origin='lower', interpolation='none')
+        plt.colorbar(cs)
 
         return cs
 
@@ -169,7 +181,7 @@ class NemoCoords(Coords):
         self.read_coord(**kwargs)
 
         # reading scale factors
-        #self.read_scalefactors()
+        self.read_scalefactors(**kwargs)
 
     def read_coord(self, **kwargs):
 
@@ -194,16 +206,18 @@ class NemoCoords(Coords):
             # extraction of the mbathy array
             print('Reading mbathy: variable %s' % dictvname['mbathy_varname'])
             mbathy = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['mbathy_varname']))
-            #mbathy[mbathy < 0] = 0
 
             # reconstruction of the bathy from deptht and mbathy
             print('Reconstruction of bathy from mbathy and depth')
             self.bathy = xr.DataArray(deptht.values[mbathy.values], dims=['y', 'x'])
+            self.bathy = self.bathy.expand_dims(['t'], axis=[0])
+            self.bathy = self.bathy * self.mask[:, 0, :, :]
+            self.bathy = self.bathy.where(self.bathy != 0)
 
         # Extraction of the surface (land sea) tmask array
-        self.mask = self.mask[:, 0, :, :]
+        self.mask = self.mask[:, :, :, :]
 
-    def read_scalefactors(self):
+    def read_scalefactors(self, **kwargs):
 
         """
         Processes NEMO scale factors.
@@ -223,11 +237,9 @@ class NemoCoords(Coords):
             message = 'The dzt variable is 1D. '
             message += "Assumes no partial step. "
             message += "dzt = dzn = dzw = 1d array."
-            nlat, nlon = self.lont.shape
-            self.dzt = np.tile(self.dzt, (nlat, nlon, 1))
-            self.dzt = np.transpose(self.dzt, (2, 0, 1))
-            self.dzw = self.dzt.copy()  # no partial steps
-            self.dzn = self.dzt.copy()  # no partial steps
+            self.dzt = self.dzt.expand_dims(dim=['t', 'y', 'x'], axis=[0, 2, 3])   # converts the array to a size of (1, z, 1, 1)
+            self.dzw = self.dzt  # no partial steps
+            self.dzn = self.dzt  # no partial steps
 
         else:
             # if the dzt variable is 2D, then it gives the width of the last level
@@ -243,13 +255,16 @@ class NemoCoords(Coords):
                 print('Dzt is 3D. Model grid is in partial step')
 
             # putting dzt as NaN where 3D mask == 0
-            self.dzt[np.squeeze(pypago.pyio.readnc(self.filename, dictvname['tmask_varname'])) == 0] = np.nan
+            #self.dzt[np.squeeze(pypago.pyio.readnc(self.filename, dictvname['tmask_varname'])) == 0] = np.nan
+            tmask3d = pypago.pyio.readnc(self.filename, dictvname['tmask_varname'], **kwargs)
+            self.dzt = self.dzt * tmask3d 
 
             if ('dze_varname' in dictvname) and ('dzn_varname' in dictvname):
                 print('Reading U-grid eastern height: variable %s' % dictvname['dze_varname'])
-                self.dze = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dze_varname']))
+                self.dze = pypago.pyio.readnc(self.filename, dictvname['dze_varname'], **kwargs)
                 print('Reading V-grid northern height: variable %s' % dictvname['dzn_varname'])
-                self.dzn = np.squeeze(pypago.pyio.readnc(self.filename, dictvname['dzn_varname']))
+                self.dzn = pypago.pyio.readnc(self.filename, dictvname['dzn_varname'], **kwargs)
+                print(self.dzn)
             else:
                 message = 'The "dze_varname" and "dzn_varname" variables '
                 message += 'are not defined. The dzn and dzw variables '
@@ -261,18 +276,15 @@ class NemoCoords(Coords):
                 # if 3D umask and vmask variables are defined, then we mask the dzw and
                 # dzn variables where masks are 0
                 print('Reading U-grid mask: variable %s' % dictvname['umask_varname'])
-                self.dze[np.squeeze(pypago.pyio.readnc(self.filename, dictvname['umask_varname'])) == 0] = np.nan
+                self.dze = self.dze * pypago.pyio.readnc(self.filename, dictvname['umask_varname'], **kwargs)
                 print('Reading V-grid mask: variable %s' % dictvname['vmask_varname'])
-                self.dzn[np.squeeze(pypago.pyio.readnc(self.filename, dictvname['vmask_varname'])) == 0] = np.nan
-
-            # putting dzt as NaN where masked
-            self.dzt[np.ma.getmaskarray(self.dzt) == 1] = np.nan
-            self.dze[np.ma.getmaskarray(self.dze) == 1] = np.nan
-            self.dzn[np.ma.getmaskarray(self.dzn) == 1] = np.nan
+                self.dzn = self.dzn * pypago.pyio.readnc(self.filename, dictvname['vmask_varname'], **kwargs)
 
             # reconstructing the dzw array
             print('Reconstruction of U-grid western height from U-grid eastern height')
-            self.dzw = np.concatenate((self.dze[:, :, -1:], self.dze[:, :, :-1]), axis=-1)
+            self.dzw = xr.concat((self.dze[:, :, :, -1:], self.dze[:, :, :, :-1]), dim='x')
+            if 'chunks' in kwargs.keys():
+                self.dzw = self.dzw.chunk(self.dze.chunks)
 
     def reconstruct_3d_e3t(self):
 
