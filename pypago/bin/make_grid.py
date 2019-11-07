@@ -57,7 +57,7 @@ def extract_grid(coords):
             passed = False
             while not passed:
                 try:
-                    imin = int(raw_input('imin = '))
+                    imin = int(input('imin = '))
                     passed = True
                 except:
                     pass
@@ -65,7 +65,7 @@ def extract_grid(coords):
             passed = False
             while not passed:
                 try:
-                    imax = int(raw_input('imax = '))
+                    imax = int(input('imax = '))
                     passed = True
                 except:
                     pass
@@ -73,7 +73,7 @@ def extract_grid(coords):
             passed = False
             while not passed:
                 try:
-                    jmin = int(raw_input('jmin = '))
+                    jmin = int(input('jmin = '))
                     passed = True
                 except:
                     pass
@@ -81,7 +81,7 @@ def extract_grid(coords):
             passed = False
             while not passed:
                 try:
-                    jmax = int(raw_input('jmax = '))
+                    jmax = int(input('jmax = '))
                     passed = True
                 except:
                     pass
@@ -112,7 +112,7 @@ def extract_grid(coords):
             grid.plot_mask()
 
             # ask if the user is ok with the domain
-            agree = int(raw_input("Is the domain ok? (0 if not) "))
+            agree = int(input("Is the domain ok? (0 if not) "))
 
         except:
             pass

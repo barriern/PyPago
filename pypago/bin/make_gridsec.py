@@ -49,7 +49,7 @@ def extract_gridsec(grid, section):
         passed = False
         while not passed:
             try:
-                keepgoing = int(raw_input('Do you want to continue? (0 if not) '))
+                keepgoing = int(input('Do you want to continue? (0 if not) '))
                 passed = True
             except:
                 pass
@@ -82,7 +82,7 @@ def extract_gridsec(grid, section):
     passed = False
     while not passed:
         try:
-            agree = int(raw_input('Are the sections well defined? (0 if not) '))
+            agree = int(input('Are the sections well defined? (0 if not) '))
             passed = True
         except:
             pass
@@ -94,7 +94,7 @@ def extract_gridsec(grid, section):
         # ask until the name is within the section_list
         section_name = '-9999999'
         while section_name not in section_list:
-            section_name = raw_input('Which section is wrong? ')
+            section_name = input('Which section is wrong? ')
 
         # find the index of the section
         indsec = pypago.misc.findsecnum(gridsec, section_name)
@@ -126,8 +126,8 @@ def extract_gridsec(grid, section):
             try:
                 # ask whether to change i. if this statement
                 # fails, then we loop again
-                if int(raw_input('Change i? ')):
-                    newi = raw_input(' -i: ').split()
+                if int(input('Change i? ')):
+                    newi = input(' -i: ').split()
                     newi = [int(n) for n in newi]
                 testi = np.array([(temp >= 0) & (temp <= nlon-1) for temp in newi])
                 if np.any(testi==False):
@@ -143,8 +143,8 @@ def extract_gridsec(grid, section):
         passed = False
         while not passed:
             try:
-                if int(raw_input('Change j? ')):
-                    newj = raw_input(' -j: ').split()
+                if int(input('Change j? ')):
+                    newj = input(' -j: ').split()
                     newj = [int(n) for n in newj]
                 testj = np.array([(temp >= 0) & (temp <= nlat-1) for temp in newj])
                 if np.any(testj==False):
@@ -159,8 +159,8 @@ def extract_gridsec(grid, section):
         passed = False
         while not passed:
             try:
-                if int(raw_input('Change dir? ')):
-                    newdir = raw_input(' -dire: ').split()
+                if int(input('Change dir? ')):
+                    newdir = input(' -dire: ').split()
                 testdir = np.array([temp in ["NW", "NE", "SE", "SW"] for temp in newdir])
                 if np.any(testdir==False):
                     message = "The directions must be NW, NE, SE, SW.\n"
@@ -204,7 +204,7 @@ def extract_gridsec(grid, section):
         plt.plot(secint.i, secint.j, marker='o')
         plt.show()
 
-        agree = int(raw_input('Are the sections now well defined? (0 if not) '))
+        agree = int(input('Are the sections now well defined? (0 if not) '))
 
     return gridsec
 
