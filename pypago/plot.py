@@ -183,7 +183,7 @@ def preplot(secstruct, secdata, istracer):
     atracer = np.zeros((nz, nl))
     zvect = np.zeros((nz, nl))
 
-    for indz in xrange(0, nz):
+    for indz in range(0, nz):
         atracer[indz, :] = _nodouble_tsr(secstruct.veci,
                                          secstruct.vecj, secdata[indz, :])
         if istracer:
@@ -237,7 +237,7 @@ def _nodouble_v(veci, vecj, vecv):
     newvecv = np.ma.masked_array([])
     newvecv = np.ma.append(newvecv, vecv[0])
 
-    for indl in xrange(1, veci.shape[0]):
+    for indl in range(1, veci.shape[0]):
         if not (veci[indl] == veci[indl-1]) & (vecj[indl] == vecj[indl-1]):
             newvecv = np.ma.append(newvecv, vecv[indl])
         else:
@@ -284,7 +284,7 @@ def _nodouble_tsr(veci, vecj, vectsr):
     newvectsr = []
     newvectsr.append(vectsr[0])
 
-    for indl in xrange(1, veci.shape[0]):
+    for indl in range(1, veci.shape[0]):
 
         if not (veci[indl] == veci[indl-1]) & (vecj[indl] == vecj[indl-1]):
             newvectsr.append(vectsr[indl])
@@ -330,7 +330,7 @@ def _make_zvect_pcol(zvect):
 
     # initialisation of a temporary zvect_pcol array
     zvect_pcol_temp = []
-    for indl in xrange(0, nl):
+    for indl in range(0, nl):
         zl = len(np.nonzero(np.ma.getmaskarray(zvect[:, indl]) == 0)[0])
         if zl > 1:
             temp = np.concatenate(([0],
@@ -351,7 +351,7 @@ def _make_zvect_pcol(zvect):
                            zvect_pcol_temp.shape[1]+1))
     zvect_pcol[:, 0] = zvect_pcol_temp[:, 0]
 
-    for indl in xrange(1, len(zvect_pcol_temp[0, :])):
+    for indl in range(1, len(zvect_pcol_temp[0, :])):
 
         ind1 = np.nonzero(np.ma.getmaskarray(zvect_pcol_temp[:, indl]) == 0)[0]
         ind2 = np.nonzero(np.ma.getmaskarray(zvect_pcol_temp[:, indl-1]) == 0)[0]
@@ -360,7 +360,7 @@ def _make_zvect_pcol(zvect):
 
         zvect_pcol[:zmin, indl] = 0.5*(zvect_pcol_temp[:zmin, indl-1] + zvect_pcol_temp[:zmin, indl])
 
-        for indz in xrange(zmin, zmax):
+        for indz in range(zmin, zmax):
             if np.ma.getmaskarray(zvect_pcol_temp[indz, indl]):
                 zvect_pcol[indz, indl] = zvect_pcol_temp[indz, indl-1]
             else:

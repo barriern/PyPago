@@ -9,7 +9,10 @@ import pickle
 import re
 import numpy as np
 from netCDF4 import Dataset
-from netcdftime import utime
+try:
+    from netcdftime import utime
+except:
+    from cftime import utime
 import pypago.disp
 
 
@@ -145,7 +148,7 @@ def correct_file_arch(filename):
     with open(filenameout, 'w') as fout:
 
         # we loop over all the lines of the INPUT file
-        for indline in xrange(0, len(all_lines)):
+        for indline in range(0, len(all_lines)):
             if indline == index:
                 # if we are at the line of the module declaration
                 # we replace by the right module
@@ -171,7 +174,7 @@ def load(filename):
 
     """
 
-    with open(filename, 'r') as pfile:
+    with open(filename, 'rb') as pfile:
         data = pickle.load(pfile)
 
     return data
@@ -218,8 +221,8 @@ def modify_meshfile(filename):
 
                 mbathy = np.squeeze(fin.variables['mbathy'][:].astype(np.int))
 
-                for i in xrange(0, e3t.shape[2]):
-                    for j in xrange(0, e3t.shape[3]):
+                for i in range(0, e3t.shape[2]):
+                    for j in range(0, e3t.shape[3]):
                         temp = mbathy[i, j]
                         if temp == 0:
                             e3u[:, :, i, j] = np.nan
@@ -370,7 +373,7 @@ def _readnc_span(ncfile, varname, start, end, stride):
 
     # loop over the end array: where -1,
     # we read to the end of the file
-    for idim in xrange(0, len(end)):
+    for idim in range(0, len(end)):
         if end[idim] == -1:
             end[idim] = varshape[idim]
 
@@ -489,7 +492,7 @@ def save(dictio, filename):
 
     """
 
-    with open(filename, "w") as fileout:
+    with open(filename, "wb") as fileout:
         pickle.dump(dictio, fileout)
 
 

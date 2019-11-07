@@ -234,7 +234,7 @@ class GridSection(object):
 
         nl1 = np.floor(len(newveci)/2.)
         if len(self.i) > 2:
-            for l in xrange(2, len(self.i)):
+            for l in range(2, len(self.i)):
                 [vecj, veci] = toolsec.secingrid(self.i[l-1], self.j[l-1],
                                                  self.i[l], self.j[l])
 
@@ -280,7 +280,7 @@ class GridSection(object):
         nl = len(np.nonzero(self.veci == self.veci)[0])
         [vecj, veci] = toolsec.nodouble(self.veci[:nl], self.vecj[:nl])
         self.lvect = np.atleast_1d([0])
-        for l in xrange(1, len(veci)):
+        for l in range(1, len(veci)):
             self.lvect = np.append(self.lvect, self.lvect[l-1] +
                                    toolsec.distance(grid.latt[vecj[l], veci[l]], grid.lont[vecj[l], veci[l]],
                                                     grid.latt[vecj[l-1], veci[l-1]], grid.lont[vecj[l-1], veci[l-1]], ee))
@@ -313,7 +313,7 @@ class GridSection(object):
         lw = 1
         cpt = 1
 
-        for indl in xrange(0, len(self.veci)):
+        for indl in range(0, len(self.veci)):
 
             if self.faces[indl] == 'N':
                 if cpt:
@@ -387,7 +387,7 @@ def extract_grid_sections(grid, sectionslist):
 
     output = []
     badsection = []
-    for secind in xrange(0, len(sectionslist)):
+    for secind in range(0, len(sectionslist)):
         gridsec = GridSection(grid, sectionslist[secind])
         if gridsec.name is not None:
             output.append(gridsec)

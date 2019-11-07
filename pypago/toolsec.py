@@ -84,7 +84,7 @@ def lengthinsec(veci, vecj, faces, dw, dn):
 
     lengthvect = np.empty(len(veci))
 
-    for l in xrange(0, len(veci)):
+    for l in range(0, len(veci)):
         if faces[l] == 'N':
             lengthvect[l] = np.squeeze(dn[vecj[l], veci[l]])
         elif faces[l] == 'W':
@@ -123,7 +123,7 @@ def locingrid(lon, lat, matlon, matlat):
     vecj = np.empty(len(lon))
     veci = np.empty(len(lon))
 
-    for l in xrange(0, len(lon)):
+    for l in range(0, len(lon)):
 
         if lon[l] < np.min(matlon):
             lon[l] = lon[l] + 360
@@ -138,7 +138,7 @@ def locingrid(lon, lat, matlon, matlat):
 
         if len(j) > 1:
             dis = np.empty(len(j))
-            for ii in xrange(0, len(j)):
+            for ii in range(0, len(j)):
                 dis[ii] = np.abs(distance(lat[l], lon[l],
                                           matlat[j[ii], i[ii]],
                                           matlon[j[ii], i[ii]], ee))
@@ -201,7 +201,7 @@ def areainsec(veci, vecj, faces, areaw, arean):
     a = arean.shape[0]
     areavect = np.zeros((a, len(veci)))
 
-    for l in xrange(0, len(veci)):
+    for l in range(0, len(veci)):
         if faces[l] == 'N':
             areavect[:, l] = arean[:, vecj[l], veci[l]]
         elif faces[l] == 'W':
@@ -358,7 +358,7 @@ def nodouble(veci, vecj):
     newveci = veci[0]
     newvecj = vecj[0]
 
-    for l in xrange(1, len(veci)):
+    for l in range(1, len(veci)):
         if not (veci[l] == veci[l-1]) & (vecj[l] == vecj[l-1]):
             newvecj = np.append(newvecj, vecj[l])
             newveci = np.append(newveci, veci[l])
@@ -571,7 +571,7 @@ def make_orientation(newveci, faces, dire):
     """
 
     orientation = np.zeros(len(newveci))
-    for l in xrange(0, len(newveci)):
+    for l in range(0, len(newveci)):
 
         if faces[l] == 'W':
             if dire[1] == 'W':

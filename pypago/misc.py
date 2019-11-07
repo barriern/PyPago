@@ -112,7 +112,7 @@ def finddomnum(model_areas, areaplotname):
     :rtype: int
     """
 
-    for inddom in xrange(0, len(model_areas)):
+    for inddom in range(0, len(model_areas)):
         if model_areas[inddom].areaname == areaplotname:
             return inddom
 
@@ -135,7 +135,7 @@ def findsecnum(model_sections, secplotname):
     :raise error: if `secplotname` not found in `MODEL_sections`
     """
 
-    for indsec in xrange(0, len(model_sections)):
+    for indsec in range(0, len(model_sections)):
         if model_sections[indsec].name == secplotname:
             return indsec
 

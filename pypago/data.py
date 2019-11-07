@@ -6,12 +6,10 @@ import numpy as np
 import pypago.pyio
 import pypago.misc
 from pypago.disp import PypagoErrors
-from pypago.sample_param import dictvname
 try:
-    from param import dictvname2
-    dictvname.update(dictvname2)
+    from param import dictvname
 except ImportError:
-    pass
+    from pypago.sample_param import dictvname
 
 def loadtime(model_sections, filename):
 
@@ -72,7 +70,7 @@ def loaddata_sec_t(model_sections, filename, dictvarname):
     time_varname = dictvname['time_varname']
     ntime = pypago.pyio.count_dim(filename, time_varname)
 
-    for timestep in xrange(0, ntime):
+    for timestep in range(0, ntime):
 
         # loop over the list of variables to extract (on T points)
         for outname, varname in dictvarname.items():
@@ -137,7 +135,7 @@ def loaddata_sec_uv(model_sections, filename_u, filename_v, dictvarname):
     time_varname = dictvname['time_varname']
     ntime = pypago.pyio.count_dim(filename_u, time_varname)
 
-    for timestep in xrange(0, ntime):
+    for timestep in range(0, ntime):
 
         print ('time step = ', timestep)
 
@@ -187,7 +185,7 @@ def _extract_sections(model_sections, tempn, tempw, outname, use_orient):
         vect = np.ma.zeros((1, nzlev, len(veci)))
 
         nl = len(veci)
-        for l in xrange(0, nl):
+        for l in range(0, nl):
             if faces[l] == 'N':
                 vect[:, :, l] = tempn[:, :, vecj[l], veci[l]]
             elif faces[l] == 'W':
@@ -267,7 +265,7 @@ def loaddata_area_t(model_areas, filename, dictvarname):
     time_varname = dictvname['time_varname']
     ntime = pypago.pyio.count_dim(filename, time_varname)
 
-    for timestep in xrange(0, ntime):
+    for timestep in range(0, ntime):
 
         for outname, varname in dictvarname.items():
 
@@ -370,7 +368,7 @@ def loaddata_sec_uv_roms(model_sections, filename_u, filename_v, dictvarname):
     time_varname = dictvname['time_varname']
     ntime = pypago.pyio.count_dim(filename_u, time_varname)
 
-    for timestep in xrange(0, ntime):
+    for timestep in range(0, ntime):
 
         print("Time step %d/%d" % (timestep, ntime))
 
@@ -434,7 +432,7 @@ def loaddata_sec_t_space(model_sections, filename, dictvarname):
     time_varname = dictvname['time_varname']
     ntime = pypago.pyio.count_dim(filename, time_varname)
 
-    for timestep in xrange(0, ntime):
+    for timestep in range(0, ntime):
 
         print("Time step %d/%d" % (timestep, ntime))
 
@@ -481,7 +479,7 @@ def _extract_sections_space(model_sections, tempn, tempw, outname, use_orient):
         vect = np.ma.zeros((1, len(veci)))
 
         nl = len(veci)
-        for l in xrange(0, nl):
+        for l in range(0, nl):
             if faces[l] == 'N':
                 vect[:, l] = tempn[:, vecj[l], veci[l]]
             elif faces[l] == 'W':
