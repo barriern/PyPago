@@ -6,12 +6,10 @@ import pylab as plt
 from pypago.disp import PypagoErrors
 import pypago.pyio
 import pypago.misc
-from pypago.sample_param import dictvname
 try:
-    from param import dictvname as dictvname2
-    dictvname.update(dictvname2)
+    from param import dictvname
 except ImportError:
-    pass
+    from pypago.sample_param import dictvname
 
 # we set the variables of the dictvname dict
 # as global variables
@@ -302,8 +300,8 @@ class NemoCoords(Coords):
         self.dzt = np.tile(e3t_0, (nlat, nlon, 1))
         self.dzt = np.transpose(self.dzt, (2, 0, 1))
 
-        for ilat in xrange(0, nlat):
-            for ilon in xrange(0, nlon):
+        for ilat in range(0, nlat):
+            for ilon in range(0, nlon):
 
                 # mbathy value at the ilat/ilon point
                 mbathytemp = mbathy[ilat, ilon]
@@ -328,12 +326,12 @@ class NemoCoords(Coords):
         # recovering the dimensions of input array
         nlat, nlon = self.dzt.shape[1], self.dzt.shape[2]
 
-        for ilat in xrange(0, nlat-1):
-            for ilon in xrange(0, nlon):
+        for ilat in range(0, nlat-1):
+            for ilon in range(0, nlon):
                 self.dzn[:, ilat, ilon] = np.min((self.dzt[:, ilat, ilon], self.dzt[:, ilat+1, ilon]), axis=0)
 
-        for ilat in xrange(0, nlat):
-            for ilon in xrange(0, nlon-1):
+        for ilat in range(0, nlat):
+            for ilon in range(0, nlon-1):
                 self.dze[:, ilat, ilon] = np.min((self.dzt[:, ilat, ilon], self.dzt[:, ilat, ilon+1]), axis=0)
 
 
@@ -660,14 +658,14 @@ class RomsCoords(Coords):
             # is assumed that it also contains the z_u and z_v variables
 
             # extracting first time step for dzt
-            self.dzt = self.dzt[0, :, :, :]
+            self.dzt = self.dzt[:, :, :]
 
             # reads the dze 4d variables with start=[1,1,1,1], end=[1, -1, -1, -1]
             print('Reading dz variable on western faces: variable %s' % dictvname['dzw_varname'])
-            self.dzw = pypago.pyio.readnc(self.filename, dictvname['dzw_varname'], 4*[1], [1]+3*[-1])
+            self.dzw = pypago.pyio.readnc(self.filename, dictvname['dzw_varname'])
 
             print('Reading dz variable on southern faces: variable %s' % dictvname['dzs_varname'])
-            dzs = pypago.pyio.readnc(self.filename, dictvname['dzs_varname'], 4*[1], [1]+3*[-1])
+            dzs = pypago.pyio.readnc(self.filename, dictvname['dzs_varname'], [0, 1, 0], 3*[-1])
             print('Reconstruction of dz on northern faces from dz on southern faces')
             self.dzn = np.ones(self.dzt.shape, dtype=np.float) * np.nan
             self.dzn[:, :-1, :] = dzs[:, :, :]

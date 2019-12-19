@@ -8,17 +8,18 @@ to :file:`.nc` files
 
 from __future__ import print_function
 import numpy as np
-from netcdftime import utime
+try:
+    from netcdftime import utime
+except:
+    from cftime import utime
 from netCDF4 import Dataset
 from pypago.misc import PypagoErrors
 import pypago.pyio
 import pypago.disp
-from pypago.sample_param import dictvname
 try:
-    from param import dictvname as dictvname2
-    dictvname.update(dictvname2)
+    from param import dictvname
 except ImportError:
-    pass
+    from pypago.sample_param import dictvname
 
 
 def gridsec_tonc(finname, varname, section_names=None, units='days since 1900-01-01 00:00:00', calendar='gregorian'):

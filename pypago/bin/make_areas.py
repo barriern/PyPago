@@ -52,7 +52,7 @@ def _process_sections(grid, gridsec, secnames, wheretogo):
     mask = grid.mask.copy()
     signes = []
 
-    for isec in xrange(0, len(secnames)):
+    for isec in range(0, len(secnames)):
         sec = pypago.misc.findsecnum(gridsec, secnames[isec])
         if wheretogo[isec] == 'in':
             signe = 1
@@ -65,7 +65,7 @@ def _process_sections(grid, gridsec, secnames, wheretogo):
         orientation = gridsec[sec].orient*signe
         faces = gridsec[sec].faces
 
-        for l in xrange(0, len(veci)):
+        for l in range(0, len(veci)):
             if faces[l] == 'N':
                 if orientation[l] == 1:
                     mask[vecj[l]+1, veci[l]] = 2
@@ -107,7 +107,7 @@ def _definearea(grid, gridsec):
     passed = False
     while not passed:
         try:
-            areaname = raw_input('name of the area? ')
+            areaname = input('name of the area? ')
             if len(areaname) == 0:
                 message = "You should provide a section name.\n"
                 message += "Please try again"
@@ -120,7 +120,7 @@ def _definearea(grid, gridsec):
     passed = False
     while not passed:
         try:
-            secname = raw_input('give names of the sections ' + \
+            secname = input('give names of the sections ' + \
                                 '(separate the names by a space) ')
             secname = secname.split()
             if len(secname) > 0:
@@ -141,7 +141,7 @@ def _definearea(grid, gridsec):
     passed = False
     while not passed:
         try:
-            wheretogo = raw_input('give orientation of the sections ' + \
+            wheretogo = input('give orientation of the sections ' + \
                                   '(in: directed toward the basin/out directed ' + \
                                   'out of the area) ')
 
@@ -164,7 +164,7 @@ def _definearea(grid, gridsec):
     # we process the sections that close the domain
     mask, signes = _process_sections(grid, gridsec, secname, wheretogo)
 
-    misc.imsave('mask_init_' + areaname + '.png', mask)
+    plt.imsave('mask_init_' + areaname + '.png', mask, cmap=plt.cm.gray)
 
     domain_ok = False
 
@@ -177,18 +177,21 @@ def _definearea(grid, gridsec):
 
         passed = False
         while not passed:
-            raw_input('When done, press any key ')
+            input('When done, press any key ')
             try:
-                mask = misc.imread('./mask_init_' + areaname + '_bis.png')
+                mask = plt.imread('./mask_init_' + areaname + '_bis.png')
                 passed = True
+                if(mask.ndim == 3):
+                    # if format is RGB (x, y, 3) or RGBA (x, y, 4)
+                    # computes the average over all 3 colors
+                    mask = np.sum(mask[:, :, :3], axis=-1) / 3.
             except:
                 message = "The ./mask_init_" + areaname + '_bis.png file\n' 
                 message += "has not been found.\n"
                 print(message)
                 pass
 
-        mask[np.nonzero(mask != 255)] = 0
-        mask[np.nonzero(mask == 255)] = 1
+        mask[np.nonzero(mask != 0)] = 1
 
         # to remove white stripes on land
         mask = mask*grid.mask
@@ -204,7 +207,7 @@ def _definearea(grid, gridsec):
         passed = False
         while not passed:
             try:
-                domain_ok = int(raw_input('Is it ok? (0 if not) '))
+                domain_ok = int(input('Is it ok? (0 if not) '))
                 passed = True
             except:
                 pass
@@ -252,7 +255,7 @@ def extract_areas_fromsec(grid, gridsec):
         passed = False
         while not passed:
             try:
-                defnewarea = int(raw_input('Define another area? (0 or 1) '))
+                defnewarea = int(input('Define another area? (0 or 1) '))
                 passed = True
             except:
                 pass
