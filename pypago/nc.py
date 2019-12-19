@@ -314,7 +314,9 @@ def _write_gridsec_netcdf(finname, secint, varname, units, calendar):
         fout.createVariable(timename, 'f', (timename, ))
 
         # recover time variable
-        modeltime = secint.time
+        # modeltime = secint.time
+        time_varname = dictvname['time_varname']   # output name of the time variable
+        modeltime = getattr(secint, time_varname)
 
         # if the variable is not made of numbers: conversion into
         # numerical time
@@ -390,7 +392,9 @@ def _write_gridvol_netcdf(finname, domint, varname, units, calendar):
         fout.createVariable(timename, 'f', (timename, ))
 
         # recover time variable
-        modeltime = domint.time
+        # modeltime = domint.time
+        time_varname = dictvname['time_varname']   # output name of the time variable
+        modeltime = getattr(secint, time_varname)
 
         # if the variable is not made of numbers: conversion into
         # numerical time
