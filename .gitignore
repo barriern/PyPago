@@ -5,3 +5,4 @@ doc_pypago
 *.log
 build
 dist
+**/__pycache__
