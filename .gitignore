@@ -6,3 +6,4 @@ doc_pypago
 build
 dist
 **/__pycache__
+pypago.egg-info
