@@ -235,7 +235,7 @@ class NemoCoords(Coords):
                 print("The dzt variable is 2D")
                 print("A 3D scale factor array at T, U and V " +
                       "points have been computed from the 2D scale factor")
-                self.dzt = self.reconstruct_3d_e3t()
+                self.reconstruct_3d_e3t()
 
             else:
                 print('Dzt is 3D. Model grid is in partial step')
