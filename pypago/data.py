@@ -513,3 +513,89 @@ def _extract_sections_space(model_sections, tempn, tempw, outname, use_orient):
             setattr(secint, outname, vect)
         else:
             setattr(secint, outname, np.concatenate((getattr(secint, outname), vect), axis=0))
+
+
+def loaddata_sec_uv_ccsm(model_sections, filename_u, filename_v, dictvarname):
+
+    """
+
+    Extracts the model output, interpolates if needed on west and north faces,
+    and saves only the data along preselected sections and areas in structfile.
+
+    .. warning::
+
+       FOR ROMS MODEL ONLY
+
+    :param str file_location: is where the model output can be
+       found (full path), which name is
+       :file:`{file_prefix}{SALT|TEMP|UVEL|VVEL}.{file_suffix}.nc`
+
+    :param bool loadarea: the `loadarea` option determines whether to load
+       the temperature and salinity on the volumes computed
+       using the :py:func:`pypago.grid.areas_MODEL` function
+
+    .. versionchanged:: 20120515
+
+       JD PAGO WHOI
+    """
+
+    # extraction of sub-domain indexes.
+    nlon = model_sections[0].nlon
+    jmin = model_sections[0].jmin
+    jmax = model_sections[0].jmax
+    imin = model_sections[0].imin
+    imax = model_sections[0].imax
+    nzlev = model_sections[0].areavect.shape[0]
+
+    # time steps in the file over which to loop
+    time_varname = dictvname['time_varname']
+    ntime = pypago.pyio.count_dim(filename_u, time_varname)
+
+    gridfile = dictvname['grid_file']
+    DXU = dictvname['DXU']
+    DYU = dictvname['DYU']
+    DZ = dictvname['DZ']
+
+    dyu = 1e-2 * pypago.pyio.readnc_wrap(gridfile, DYU, [jmin-1, imin], [jmax+1, imax + 2], nlon)  # originally in centimeters, at northwest corner of cell >> convert to meters
+    dxu = 1e-2 * pypago.pyio.readnc_wrap(gridfile, DXU, [jmin-1, imin], [jmax+1, imax + 2], nlon)  # originally in centimeters, at northwest corner of cell >> convert to meters
+
+    dz = np.squeeze(1e-2 * pypago.pyio.readnc(gridfile, DZ))   # originally in centimeters >> convert to meters
+    dz = dz[:, np.newaxis, np.newaxis]   # dimensions [Z, 1, 1]
+    dzu = dz
+    dzv = dz
+
+    dyu = dyu[np.newaxis, :, :]
+    dyu = dyu[np.newaxis, :, :]
+
+    for timestep in xrange(0, ntime):
+
+        print("Time step %d/%d" % (timestep, ntime))
+
+        # loop over the variables which will be extracted
+        for outname, (varname_u, varname_v) in dictvarname.items():
+
+            if pypago.pyio.check_ncvar_exist(filename_u, varname_u) & pypago.pyio.check_ncvar_exist(filename_v, varname_v):
+
+                # originally in centimeters/s >> convert to meters/s
+                unw = 1e-2 * pypago.pyio.readnc_wrap(filename_u, varname_u,
+                                                     [timestep, 0, jmin-1, imin],
+                                                     [timestep+1, nzlev+1, jmax+1, imax+2], nlon)
+                # originally in centimeters/s >> convert to meters/s
+                vnw = 1e-2 * pypago.pyio.readnc_wrap(filename_v, varname_v,
+                                                     [timestep, 0, jmin-1, imin],
+                                                     [timestep+1, nzlev+1, jmax+1, imax+2], nlon)
+
+                transw = unw * dzu * dyu      # dims: [Z, Y, Z]
+                transw = np.mean(np.ma.array((transw[:, :, :-1, :], transw[:, :, 1:, :])), axis=0)
+
+                transn = vnw * dzv * dxu      # dims: [Z, Y, Z]
+                transn = np.mean(np.ma.array((transn[:, :, 1:, :-1], transn[:, :, 1:, 1:])), axis=0)
+
+                # function that modifies the MODEL_sections list
+                _extract_sections(model_sections, transn, transw, outname, use_orient=True)
+
+            else:
+                print("========================================")
+                print("The %s or %s variable does not exist!!!" % (varname_u, varname_v))
+                print("========================================")
+    return model_sections

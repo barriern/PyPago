@@ -1,3 +1,9 @@
 build.sh
 doc_pypago
+*.pyc
+*.sh
+*.log
+build
+dist
 **/__pycache__
+pypago.egg-info
