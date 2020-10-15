@@ -3,7 +3,7 @@
 [![GitHub Issues](https://img.shields.io/github/issues/barriern/PyPago)](https://github.com/barriern/PyPago/issues)
 
 <div align="center">
-  <img src="pago_background.jpg" width=400>
+  <img src="pago_background.jpg" width=100%>
 </div>
 
 # Description
