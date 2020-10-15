@@ -1,5 +1,9 @@
 # PyPago versioning
 
+## 1.0.5
+
+- Improve README.md
+
 ## 1.0.4
 
 ### New features
