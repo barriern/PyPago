@@ -1,3 +1,7 @@
+[![PyPI](https://img.shields.io/pypi/v/pypago)](https://pypi.org/project/pypago/)
+[![Latest Release](https://img.shields.io/github/release/barriern/PyPago)](https://github.com/barriern/PyPago/issues)
+[![GitHub Issues](https://img.shields.io/github/issues/barriern/PyPago)](https://github.com/barriern/PyPago/issues)
+
 Inter-comparison of model and gridded observations of the ocean is a challenge when they use different grids. 
 Interpolation from one grid to another brings eventual errors that may affect significantly large scale budgets of tracers (heat, salt, freshwater). 
 
