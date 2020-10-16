@@ -13,6 +13,9 @@ from setuptools import setup, find_packages
 VERSION_FILE = 'VERSION'
 version = open(VERSION_FILE).read().strip()
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name="pypago",
     version=version,
@@ -21,7 +24,7 @@ setup(
     maintainer='Nicolas Barrier',
     maintainer_email='nicolas.barrier@ird.fr',
     description="Python Physical Analysis of Gridded Ocean",
-    license="CeCILL", 
+    long_description_content_type="text/markdown",
     keywords="ocean; grid model; transport; sections; budgets; heat; freshwater; ROMS; NEMO; IPSL; CNRM; GFDL",
     include_package_data=True,
     url="https://sourcesup.renater.fr/pago",
@@ -53,7 +56,7 @@ setup(
         "Topic :: Scientific/Engineering :: Physics",
         "Topic :: Scientific/Engineering :: Visualization",
         "Topic :: Scientific/Engineering :: Physics",
-        "License :: Free To Use But Restricted",  # .. todo::
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: Unix",
         "Operating System :: POSIX :: Linux",
