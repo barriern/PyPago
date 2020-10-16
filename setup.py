@@ -46,7 +46,8 @@ setup(
               'basemap(>=1.0.7)',
               'netcdf4(>1.1.9)',
              ],
-    long_description=open('README.md').read(),
+
+    long_description=long_descriptiion,
 
     classifiers = [
         #"Development Status :: 5 - Production/Stable",
