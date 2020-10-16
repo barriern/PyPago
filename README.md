@@ -4,9 +4,7 @@
 [![Latest Release](https://img.shields.io/github/release/barriern/PyPago)](https://github.com/barriern/PyPago/issues)
 [![GitHub Issues](https://img.shields.io/github/issues/barriern/PyPago)](https://github.com/barriern/PyPago/issues)
 
-<div align="center">
-  <img src="pago_background.jpg" width=100%>
-</div>
+![PyPago Logo](http://pypago.nicolasbarrier.fr/_images/pago_background.jpg)
 
 # Description
 
