@@ -27,7 +27,7 @@ setup(
     long_description_content_type="text/markdown",
     keywords="ocean; grid model; transport; sections; budgets; heat; freshwater; ROMS; NEMO; IPSL; CNRM; GFDL",
     include_package_data=True,
-    url="https://sourcesup.renater.fr/pago",
+    url="https://github.com/barriern/PyPago",
     packages=find_packages(),
     install_requires=['docutils>=0.12',
                       'sphinx>=1.3.1',
