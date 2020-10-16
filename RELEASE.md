@@ -1,8 +1,15 @@
 # PyPago versioning
 
+## 1.0.6
+
+Update README to allow display on PyPi website
+
+
 ## 1.0.5
 
 - Improve README.md
+
+**Note: has been accidently removed from PyPi. Use 1.0.6 instead**
 
 ## 1.0.4
 
