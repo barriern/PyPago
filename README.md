@@ -1,3 +1,4 @@
+[![License](https://img.shields.io/github/license/barriern/PyPago)]
 [![DOI](https://zenodo.org/badge/154350333.svg)](https://zenodo.org/record/4091652)
 [![PyPI](https://img.shields.io/pypi/v/pypago)](https://pypi.org/project/pypago/)
 [![Latest Release](https://img.shields.io/github/release/barriern/PyPago)](https://github.com/barriern/PyPago/issues)
