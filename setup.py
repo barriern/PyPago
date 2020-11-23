@@ -47,7 +47,7 @@ setup(
               'netcdf4(>1.1.9)',
              ],
 
-    long_description=long_descriptiion,
+    long_description=long_description,
 
     classifiers = [
         #"Development Status :: 5 - Production/Stable",
