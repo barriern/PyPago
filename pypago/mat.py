@@ -129,7 +129,7 @@ def secmat_topygo(filename):
 
 if __name__ == '__main__':
 
-    import pylab as plt
+    import matplotlib.pyplot as plt
 
     filename_test = 'natl_ORCA025.L75-GRD88_y2000m07_sections.mat'
     #output = gridsec_topygo(filename, 'NEMO', 100)

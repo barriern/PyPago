@@ -16,7 +16,7 @@ the second argument is the name of the output file.
 """
 
 import sys
-import pylab as plt
+import matplotlib.pyplot as plt
 from pypago.disp import PypagoErrors
 import pypago.coords
 import pypago.grid
