@@ -10,9 +10,9 @@ import pypago.pyio
 import pypago.grid
 import pypago.misc
 import pypago.sections
-import Tkinter as tk
-import tkFileDialog
-import ttk
+import tkinter as tk
+import tkinter.filedialog as tkfiledialog
+import tkinter.ttk as ttk
 import numpy as np
 from pypago.guis.NewToolbar import NewToolbar
 from pypago.guis._matplotlib_grid_model import MatplotlibGridModel
@@ -26,7 +26,7 @@ class GridModel(tk.Tk):
     Class that defines the GUIs associated with the program for the extraction of
     grid model and section staircases
 
-    Inherits from the :py:class:`Tkinter.Tk` class.
+    Inherits from the :py:class:`tkinter.Tk` class.
 
     .. versionadded:: 2015-07-31
        barrier.n
@@ -76,7 +76,7 @@ class GridModel(tk.Tk):
         """
         In this function, all the widgets are created.
 
-        The layout is managed by the :py:func:`Tkinter.grid` function
+        The layout is managed by the :py:func:`tkinter.grid` function
         """
 
         self.grid()
@@ -250,7 +250,7 @@ class GridModel(tk.Tk):
         """
         Function that is called when the Quit menu is activated.
 
-        It destroys the Tkinter frame
+        It destroys the tkinter frame
         """
 
         self.destroy()
@@ -268,7 +268,7 @@ class GridModel(tk.Tk):
         options['title'] = u'Choose the .nc file containing meshgrid to be opened'
 
         try:
-            filename = tkFileDialog.askopenfilename(**options)
+            filename = tkfiledialog.askopenfilename(**options)
         except:
             print('perdu')
             print "Unexpected error:", sys.exc_info()[0]
@@ -318,7 +318,7 @@ class GridModel(tk.Tk):
             options = {}
             options['defaultextension'] = '.pygo'
             options['filetypes'] = [('PyPago Grid Files', '.pygo')]
-            filename = tkFileDialog.asksaveasfilename(**options)
+            filename = tkfiledialog.asksaveasfilename(**options)
             if filename:
                 self.outputfilename = filename
                 pypago.pyio.save(self.bmapplot.gridmodel, self.outputfilename.replace(".pygo", "_grid.pygo"))
@@ -339,7 +339,7 @@ class GridModel(tk.Tk):
         options = {}
         options['defaultextension'] = '.pygo'
         options['filetypes'] = [('PyPago Grid Files', '.pygo')]
-        filename = tkFileDialog.asksaveasfilename(**options)
+        filename = tkfiledialog.asksaveasfilename(**options)
         if filename:
             self.outputfilename = filename
             pypago.pyio.save(self.bmapplot.gridmodel, self.outputfilename.replace(".pygo", "_grid.pygo"))
@@ -359,7 +359,7 @@ class GridModel(tk.Tk):
         options['filetypes'] = [('PyPago Grid Files', '.pygo')]
         options['initialdir'] = '{0}/.pago'.format(os.environ['HOME'])
         options['title'] = u'Choose the .pygo file containing sections to be opened'
-        filename = tkFileDialog.askopenfilename(**options)
+        filename = tkfiledialog.askopenfilename(**options)
 
         if filename:
 

@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.basemap import Basemap
 from matplotlib import rcParams
-import tkMessageBox
+import tkinter.messagebox as tkMessageBox
 rcParams['lines.linewidth'] = 2
 rcParams['text.usetex'] = False
 
