@@ -8,10 +8,7 @@ to :file:`.nc` files
 
 from __future__ import print_function
 import numpy as np
-try:
-    from netcdftime import utime
-except:
-    from cftime import utime
+import cftime
 from netCDF4 import Dataset
 from pypago.misc import PypagoErrors
 import pypago.pyio
@@ -321,8 +318,7 @@ def _write_gridsec_netcdf(finname, secint, varname, units, calendar):
         # if the variable is not made of numbers: conversion into
         # numerical time
         if not isinstance(modeltime[0], (int, long, float)):
-            cdftime = utime(units, calendar)
-            modeltime = cdftime.date2num(modeltime)
+            modeltime = cftime.date2num(modeltime, units, calendar)
             fout.variables[timename].calendar = calendar
             fout.variables[timename].units = units
         fout.variables[timename][:] = modeltime
@@ -399,8 +395,7 @@ def _write_gridvol_netcdf(finname, domint, varname, units, calendar):
         # if the variable is not made of numbers: conversion into
         # numerical time
         if not isinstance(modeltime[0], (int, long, float)):
-            cdftime = utime(units, calendar)
-            modeltime = cdftime.date2num(modeltime)
+            modeltime = cftime.date2num(modeltime, units, calendar)
             fout.variables[timename].calendar = calendar
             fout.variables[timename].units = units
         fout.variables[timename][:] = modeltime
