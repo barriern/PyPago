@@ -6,6 +6,7 @@ the :py:class:`pypago.guis.gui_edition_sections.EditionSections`
 class
 """
 
+import matplotlib.path as mpath
 import pypago.pyio
 import pypago.misc
 import pypago.sections
@@ -14,9 +15,10 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits.basemap import Basemap
 from matplotlib import rcParams
 import tkinter.messagebox as tkMessageBox
+import cartopy.ccrs as ccrs
+import cartopy.feature as cfeature
 rcParams['lines.linewidth'] = 2
 rcParams['text.usetex'] = False
 
@@ -118,19 +120,16 @@ class MatplotlibEditionsSections(object):
         """
 
         if str(self.proj) == 'cyl':  # cylindrical projection: parameters are domain limits
-            self.bmap = Basemap(llcrnrlon=self.lonw, urcrnrlon=self.lone, llcrnrlat=self.lats,
-                                urcrnrlat=self.latn, projection=self.proj, ax=self.plotax,
-                                resolution=self.gui.combobox_res.get(), suppress_ticks=False)
+            self.bmap = plt.axes(projection=ccrs.PlateCarree())
+            self.bmap.set_extent([self.lonw, self.lone, self.lats, self.latn], ccrs.PlateCarree())
 
         elif str(self.proj) == 'npstere':  # northern hemisphere projection
-            self.bmap = Basemap(lon_0=self.lon0, boundinglat=90-self.blat,
-                                projection=self.proj, ax=self.plotax,
-                                resolution=self.gui.combobox_res.get())
-
+            self.bmap = plt.axes(projection=ccrs.NorthPolarStereo())
+            self.bmap.set_extent([-180, 180, 90 - self.blat, 90], ccrs.PlateCarree())  
+        
         elif str(self.proj) == 'spstere':  # southern hemisphere projection
-            self.bmap = Basemap(lon_0=self.lon0, boundinglat=-90+self.blat,
-                                projection=self.proj, ax=self.plotax,
-                                resolution=self.gui.combobox_res.get())
+            self.bmap = plt.axes(projection=ccrs.SouthPolarStereo())
+            self.bmap.set_extent([-180, 180, -90, -90 + self.blat], ccrs.PlateCarree())  
 
         else:  # this is the Lambert Conformal Projection (not masked)
             self.make_lambert()
@@ -680,39 +679,30 @@ class MatplotlibEditionsSections(object):
             hem = None
 
         if hem is not None:  # if hemisphere is not none, the lcc projection can be used is
-
-            # Here, we convert the Python lcc to a NCL-like lcc (cf. my script lambert.py)
-            if hem == 'NH':
-                lat2 = 89.999
-                lat1 = 0.001
-            else:
-                lat2 = -89.999
-                lat1 = -0.001
+            
             lon0 = 0.5*(self.lone + self.lonw)
-            self.bmap = Basemap(llcrnrlon=self.lonw, llcrnrlat=self.lats,
-                                urcrnrlon=self.lone, urcrnrlat=self.latn,
-                                lon_0=lon0, lat_1=lat1, lat_2=lat2,
-                                projection=self.proj, resolution='c')
+            self.bmap = ccrs.LambertConformal(central_longitude=lon0)
+            self.bmap.set_extent([self.lonw, self.lone, self.lats, self.latn], ccrs.PlateCarree())
 
-            if hem == 'NH':
-                xmin = self.bmap(self.lonw, self.lats)[0]
-                xmax = self.bmap(self.lone, self.lats)[0]
-                ymin = self.bmap(lon0, self.lats)[1]
-                ymax = self.bmap(self.lonw, self.latn)[1]
-            else:
-                xmin = self.bmap(self.lonw, self.latn)[0]
-                xmax = self.bmap(self.lone, self.latn)[0]
-                ymax = self.bmap(lon0, self.latn)[1]
-                ymin = self.bmap(self.lonw, self.lats)[1]
+            N = 100
 
-            lonmin, latmin = self.bmap(xmin, ymin, inverse=True)
-            lonmax, latmax = self.bmap(xmax, ymax, inverse=True)
+            x0 = np.linspace(self.lonw, self.lone, N)
+            y0 = np.full((N), self.lats)
 
-            self.bmap = Basemap(llcrnrlon=lonmin, llcrnrlat=latmin,
-                                urcrnrlon=lonmax, urcrnrlat=latmax, lon_0=lon0,
-                                lat_1=lat1, lat_2=lat2, projection=self.proj,
-                                resolution=self.gui.combobox_res.get(), ax=self.plotax)
+            y1 = np.linspace(self.lats, self.latn, N)
+            x1 = np.full((N), self.lone)
 
+            x2 = np.linspace(self.lonw, self.lone, N)[::-1]
+            y2 = np.full((N), self.latn)
+
+            y3 = np.linspace(self.lats, self.latn, N)[::-1]
+            x3 = np.full((N), self.lonw)
+
+            x = np.concatenate([x0, x1, x2, x3])
+            y = np.concatenate([y0, y1, y2, y3])
+            path = mpath.Path(np.array([x, y]).T)
+            self.bmap.set_boundary(path, transform=ccrs.PlateCarree())
+            
         else:
             # If our domain crosses the equator, lcc cannot be used
             # -> we change the projection to cyl
