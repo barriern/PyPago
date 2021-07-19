@@ -119,16 +119,15 @@ class EditionSections(tk.Tk):
 
         self.label_res = tk.Label(self, text='Resolution', anchor="w")
         self.label_res.grid(row=4, column=2)
-        self.combobox_res = ttk.Combobox(self, values=['c', 'l', 'i', 'h', 'f'])
+        self.combobox_res = ttk.Combobox(self, values=['110m', '50m', '10m'])
         self.combobox_res.grid(row=4, column=3)
-        self.combobox_res.set('c')
+        self.combobox_res.set('110m')
 
         self.label_mode = tk.Label(self, text='Plot mode', anchor="w")
         self.label_mode.grid(row=5, column=0)
         self.combobox_mode = ttk.Combobox(self,
                                           values=['Filled continents',
-                                                  'ETOPO',
-                                                  'Map Background'])
+                                                  'ETOPO'])
         self.combobox_mode.grid(row=5, column=1)
         self.combobox_mode.set('Filled continents')
 
@@ -266,11 +265,13 @@ class EditionSections(tk.Tk):
         file_menu.add_command(label="Quit", command=self.on_quit)
         menubar.add_cascade(label="File", menu=file_menu)
 
-        background_menu = tk.Menu(menubar, tearoff=0)  # create a background menu
-        # Add a load background item
-        background_menu.add_command(label='Load background',
-                                    command=self.on_background)
-        menubar.add_cascade(label="Background", menu=background_menu)
+        
+        # background_menu = tk.Menu(menubar, tearoff=0)  # create a background menu
+        # # Add a load background item
+        # background_menu.add_command(label='Load background',
+        #                             command=self.on_background)
+        # menubar.add_cascade(label="Background", menu=background_menu)
+        
 
         self.config(menu=menubar)
 
