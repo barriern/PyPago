@@ -1,7 +1,7 @@
 """ Module for the manipulation of section endpoints and gridded section """
 
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 try:
     from param import ee
 except ImportError:

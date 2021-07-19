@@ -6,7 +6,7 @@ associated with the NEMO model.
 
 import sys
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 import matplotlib as mp
 from mpl_toolkits.basemap import pyproj
 

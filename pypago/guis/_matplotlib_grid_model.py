@@ -6,7 +6,7 @@ the :py:class:`pypago.pypago_gui.gui_grid_model.GridModel`
 class
 """
 
-import tkMessageBox
+import tkinter.messagebox as tkMessageBox
 import pypago.pyio
 import pypago.grid
 import pypago.plot

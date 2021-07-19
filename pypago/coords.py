@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 from pypago.disp import PypagoErrors
 import pypago.pyio
 import pypago.misc

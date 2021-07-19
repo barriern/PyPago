@@ -9,10 +9,8 @@ import pickle
 import re
 import numpy as np
 from netCDF4 import Dataset
-try:
-    from netcdftime import utime
-except:
-    from cftime import utime
+import cftime
+
 import pypago.disp
 
 
@@ -50,8 +48,7 @@ def read_time(filename, time_varname):
                 calendar = 'gregorian'
 
             # conversion from numeric to datetime
-            cdftime = utime(units, calendar)
-            output = cdftime.num2date(time[:])
+            output = cftime.num2date(time[:], units, calendar)
 
             # barrier.n: if the calendar is a non real one (360, all_leap, etc),
             # the output of the num2date function is not a datetime.datetime object

@@ -2,10 +2,10 @@
 
 """ Module that handles the Toolbar used in the Guis"""
 
-from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 
 
-class NewToolbar(NavigationToolbar2TkAgg):
+class NewToolbar(NavigationToolbar2Tk):
 
     """
     Toolbar of the Matplotlib window (inherited from the

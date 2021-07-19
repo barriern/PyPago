@@ -9,9 +9,9 @@ from __future__ import print_function
 
 import sys
 import os
-import Tkinter as tk
-import tkFileDialog
-import ttk
+import tkinter as tk
+import tkinter.filedialog as tkfiledialog
+import tkinter.ttk as ttk
 
 import pypago.pyio
 import pypago.misc
@@ -22,7 +22,7 @@ class EditionSections(tk.Tk):
 
     """
     Class that defines the GUIs associated with the program for the edition of section endpoints
-    Inherits from the :py:class:`Tkinter.Tk` class.
+    Inherits from the :py:class:`tkinter.Tk` class.
 
     .. versionadded:: 2015-07-31
        barrier.n
@@ -59,7 +59,7 @@ class EditionSections(tk.Tk):
         """
         In this function, all the widgets are created.
 
-        The layout is managed by the :py:func:`Tkinter.grid` function
+        The layout is managed by the :py:func:`tkinter.grid` function
         """
 
         self.grid()
@@ -287,7 +287,7 @@ class EditionSections(tk.Tk):
         options['filetypes'] = [('PyPago Files', '.pygo')]
         options['initialdir'] = '{0}/.pago'.format(os.environ['HOME'])
         options['title'] = u'Choose the .pygo file to be opened'
-        filename = tkFileDialog.askopenfilename(**options)
+        filename = tkfiledialog.askopenfilename(**options)
 
         if filename:
             self.section_file_name = filename
@@ -319,7 +319,7 @@ class EditionSections(tk.Tk):
             options['filetypes'] = [('PyPago Files', '.pygo')]
             options['initialdir'] = '{0}/.pago'.format(os.environ['HOME'])
             options['title'] = u'Choose the .pygo file to be saved'
-            filename = tkFileDialog.asksaveasfilename(**options)
+            filename = tkfiledialog.asksaveasfilename(**options)
             if filename:
                 self.section_file_name = filename
                 pypago.pyio.save(self.bmapplot.sections, self.section_file_name)
@@ -340,7 +340,7 @@ class EditionSections(tk.Tk):
         options['filetypes'] = [('PyPago Files', '.pygo')]
         options['initialdir'] = '{0}/.pago'.format(os.environ['HOME'])
         options['title'] = u'Choose the .pygo file to be saved'
-        filename = tkFileDialog.asksaveasfilename(**options)
+        filename = tkfiledialog.asksaveasfilename(**options)
         if filename:
             self.section_file_name = filename
             pypago.pyio.save(self.bmapplot.sections, self.section_file_name)
@@ -350,7 +350,7 @@ class EditionSections(tk.Tk):
         """
         Function that is called when the Quit menu is activated.
 
-        It destroys the Tkinter frame
+        It destroys the tkinter frame
         """
 
         self.destroy()
@@ -371,7 +371,7 @@ class EditionSections(tk.Tk):
         options = {}
         options['defaultextension'] = '.nc'
         options['filetypes'] = [('NetCDF files', '.nc')]
-        filename = tkFileDialog.askopenfilename(**options)
+        filename = tkfiledialog.askopenfilename(**options)
 
         if filename:
             self.backgroud_file_name = filename

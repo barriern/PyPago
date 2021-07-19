@@ -25,7 +25,7 @@ is the name of the output file.
 # pylint: disable=superfluous-parens
 
 import sys
-import pylab as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.misc as misc
 

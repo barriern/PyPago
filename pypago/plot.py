@@ -5,7 +5,7 @@ Module that contains various functions dedicated to plotting using |pypago|
 
 from __future__ import print_function
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from pypago.misc import PypagoErrors, extract_mask, make_percentile_cmap
 
