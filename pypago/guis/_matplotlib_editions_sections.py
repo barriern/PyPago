@@ -152,47 +152,50 @@ class MatplotlibEditionsSections(object):
         self.cbarax.axis('off')  # we "hide" the axis of the colormap
 
         if self.gui.combobox_mode.get() == 'ETOPO':
-            self.bmap.etopo(zorder=-1000, ax=self.plotax)
-            self.bmap.drawcoastlines(color='k', linewidth=1, ax=self.plotax)
-
+            #self.bmap.etopo(zorder=-1000, ax=self.plotax)
+            #self.bmap.drawcoastlines(color='k', linewidth=1, ax=self.plotax)
+            self.bmap.stock_img()
+            self.bmap.coastlines()
         elif self.gui.combobox_mode.get() == 'Filled continents':
-            self.bmap.drawcoastlines(color='k', linewidth=1, zorder=-1000, ax=self.plotax)
-            self.bmap.fillcontinents(color='DarkGray', zorder=-1001, ax=self.plotax)
+            scale = self.gui.combobox_res.get()
+            self.bmap.add_feature(cfeature.LAND.with_scale(scale), edgecolor='k', linewidth=1, zorder=-1000)
+            self.bmap.add_feature(cfeature.LAND.with_scale(scale), facecolor='darkgray', linewidth=1, zorder=-1001)
 
-        if self.gui.combobox_mode.get() == 'Map Background':
+        
+        # if self.gui.combobox_mode.get() == 'Map Background':
 
-            if 1:#try:
+        #     if 1:#try:
 
-                xmap, ymap = self.bmap(self.lonbg, self.latbg)
+        #         xmap, ymap = self.bmap(self.lonbg, self.latbg)
 
-                if self.clim is None:
-                    cmin = self.mapbg.min()
-                    cmax = self.mapbg.max()
-                    self.clim = str(cmin) + ',' + str(cmax)
-                    self.gui.entry_clim_lab.set(self.clim)
-                    levels = np.linspace(cmin, cmax, 21)
+        #         if self.clim is None:
+        #             cmin = self.mapbg.min()
+        #             cmax = self.mapbg.max()
+        #             self.clim = str(cmin) + ',' + str(cmax)
+        #             self.gui.entry_clim_lab.set(self.clim)
+        #             levels = np.linspace(cmin, cmax, 21)
 
-                else:
-                    stout = self.gui.entry_clim_lab.get().split(',')
-                    cmin = float(stout[0])
-                    cmax = float(stout[1])
-                    levels = np.linspace(cmin, cmax, 21)
+        #         else:
+        #             stout = self.gui.entry_clim_lab.get().split(',')
+        #             cmin = float(stout[0])
+        #             cmax = float(stout[1])
+        #             levels = np.linspace(cmin, cmax, 21)
 
-                cscont = self.bmap.contourf(xmap, ymap, self.mapbg, levels=levels,
-                                            ax=self.plotax, cmap=self.gui.combobox_cmap.get(),
-                                            extend='both')
+        #         cscont = self.bmap.contourf(xmap, ymap, self.mapbg, levels=levels,
+        #                                     ax=self.plotax, cmap=self.gui.combobox_cmap.get(),
+        #                                     extend='both')
 
-                try:
-                    plt.colorbar(cscont, ax=self.cbarax, orientation='horizontal')
-                except:
-                    pass
+        #         try:
+        #             plt.colorbar(cscont, ax=self.cbarax, orientation='horizontal')
+        #         except:
+        #             pass
 
-                self.bmap.drawcoastlines(color='k', linewidth=1, ax=self.plotax)
+        #         self.bmap.drawcoastlines(color='k', linewidth=1, ax=self.plotax)
 
-            else:#except:
-                tkMessageBox.showinfo('Oups!', 'Problem with the map background. You might need to check the NetCDF file')  # pylint: disable=line-too-long
-                self.gui.combobox_mode.set('Filled continents')
-                self.init_plot()
+        #     else:#except:
+        #         tkMessageBox.showinfo('Oups!', 'Problem with the map background. You might need to check the NetCDF file')  # pylint: disable=line-too-long
+        #         self.gui.combobox_mode.set('Filled continents')
+        #         self.init_plot()
 
         self.draw_sections()
 
