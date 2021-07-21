@@ -8,6 +8,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mp
+import cartopy.geodesic
 
 ######################################################## Output redirection
 
@@ -92,4 +93,4 @@ cmapv = plt.cm.get_cmap('RdBu_r')
 
 ######################################################## Settings for projection (change carefully)
 
-#ee = pyproj.Geod(ellps='GRS80')  # ellipsoid used for distance calculation
+ee = cartopy.geodesic.Geodesic()  # ellipsoid used for distance calculation
