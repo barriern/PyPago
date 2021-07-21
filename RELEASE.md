@@ -1,5 +1,12 @@
 # PyPago versioning
 
+## 1.0.7
+
+### New features
+
+- Use of `cartopy` instead of `Basemap`.
+
+
 ## 1.0.6
 
 Update README to allow display on PyPi website
