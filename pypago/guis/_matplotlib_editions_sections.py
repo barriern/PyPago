@@ -130,7 +130,7 @@ class MatplotlibEditionsSections(object):
         #self.cbarax = self.figure.add_axes(self.cbaraxcoords)  # and the colormap axes
         #self.cbarax.axis('off')  # we "hide" the axis of the colormap
 
-        if str(self.proj) == 'cyl':  # cylindrical projection: parameters are domain 
+        if str(self.proj) == 'cyl':  # cylindrical projection: parameters are domain
             self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.PlateCarree())
             self.plotax.set_extent([self.lonw, self.lone, self.lats, self.latn], ccrs.PlateCarree())
         elif str(self.proj) == 'npstere':  # northern hemisphere projection
@@ -155,13 +155,11 @@ class MatplotlibEditionsSections(object):
         The sections are drawn here by using the :py:func:`draw_sections` function
         """
         
-        self.plotax.clear()
-
+        scale = self.gui.combobox_res.get()
         if self.gui.combobox_mode.get() == 'ETOPO':
             self.plotax.stock_img()
-            self.plotax.coastlines()  
+            self.plotax.coastlines(resolution=scale)  
         elif self.gui.combobox_mode.get() == 'Filled continents':
-            scale = self.gui.combobox_res.get()
             self.plotax.add_feature(cfeature.LAND.with_scale(scale), edgecolor='k', linewidth=1, zorder=-1000)
             self.plotax.add_feature(cfeature.LAND.with_scale(scale), facecolor='darkgray', linewidth=1, zorder=-1001)
 
