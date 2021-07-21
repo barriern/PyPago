@@ -39,11 +39,11 @@ setup(
                       'numpy>=1.9',
                       'netCDF4>=1.1', 
                       'matplotlib>=1.4',
-                      'basemap>=1.0',
+                      'cartopy>=1.0',
                      ],
     requires=['numpy(>=1.9.2)',
               'matplotlib(>=1.43)',
-              'basemap(>=1.0.7)',
+              'cartopy(>=1.0.7)',
               'netcdf4(>1.1.9)',
              ],
 
