@@ -131,18 +131,18 @@ class EditionSections(tk.Tk):
         self.combobox_mode.grid(row=5, column=1)
         self.combobox_mode.set('Filled continents')
 
-        self.label_cmap = tk.Label(self, text='Colormap', anchor="w")
-        self.label_cmap.grid(row=5, column=2)
-        self.combobox_cmap = ttk.Combobox(self, values=self.bmapplot.cmapnames)
-        self.combobox_cmap.grid(row=5, column=3)
-        self.combobox_cmap.set('jet')
+        # self.label_cmap = tk.Label(self, text='Colormap', anchor="w")
+        # self.label_cmap.grid(row=5, column=2)
+        # self.combobox_cmap = ttk.Combobox(self, values=self.bmapplot.cmapnames)
+        # self.combobox_cmap.grid(row=5, column=3)
+        # self.combobox_cmap.set('jet')
 
-        self.label_clim = tk.Label(self, text='Colormap lim.', anchor="w")
-        self.label_clim.grid(row=6, column=0)
-        self.entry_clim_lab = tk.StringVar()
-        self.entry_clim = tk.Entry(self, textvariable=self.entry_clim_lab)
-        self.entry_clim.grid(row=6, column=1)
-        self.entry_clim_lab.set('')
+        # self.label_clim = tk.Label(self, text='Colormap lim.', anchor="w")
+        # self.label_clim.grid(row=6, column=0)
+        # self.entry_clim_lab = tk.StringVar()
+        # self.entry_clim = tk.Entry(self, textvariable=self.entry_clim_lab)
+        # self.entry_clim.grid(row=6, column=1)
+        # self.entry_clim_lab.set('')
 
         self.label_secname = tk.Label(self, text='Section name', anchor="w")
         self.label_secname.grid(row=1, column=4)
@@ -212,10 +212,10 @@ class EditionSections(tk.Tk):
         self.grid_columnconfigure(6, weight=1)
         self.grid_rowconfigure(7, weight=1)
 
-        self.entry_clim.configure(state='disabled')
-        self.combobox_cmap.configure(state='disabled')
-        self.label_clim.configure(state='disabled')
-        self.label_cmap.configure(state='disabled')
+        # self.entry_clim.configure(state='disabled')
+        # self.combobox_cmap.configure(state='disabled')
+        # self.label_clim.configure(state='disabled')
+        # self.label_cmap.configure(state='disabled')
 
     def bind_functions(self):
 
@@ -235,10 +235,10 @@ class EditionSections(tk.Tk):
         self.combobox_mode.bind("<<ComboboxSelected>>", self.on_change_plot)
 
         # Change in clim -> change the clim attribute, redraw
-        self.entry_clim.bind("<Return>", self.on_change_clim)
+        # self.entry_clim.bind("<Return>", self.on_change_clim)
 
         # Change in colormap -> only need to redraw
-        self.combobox_cmap.bind("<<ComboboxSelected>>", self.on_change_plot)
+        # self.combobox_cmap.bind("<<ComboboxSelected>>", self.on_change_plot)
 
         # Function associated with change in direction
         self.combobox_seg.bind("<<ComboboxSelected>>", self.on_change_dir)
