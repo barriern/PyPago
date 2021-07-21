@@ -391,7 +391,6 @@ class EditionSections(tk.Tk):
             self.entry_lats_lab.set(self.bmapplot.lats)
             self.entry_latn_lab.set(self.bmapplot.latn)
             self.bmapplot.init_bmap()
-            self.bmapplot.init_plot()  # we redo the plot
 
     def on_change_working_mode(self):
 
@@ -467,7 +466,7 @@ class EditionSections(tk.Tk):
             self.combobox_cmap.configure(state='normal')
             self.label_clim.configure(state='normal')
             self.label_cmap.configure(state='normal')
-        self.bmapplot.init_plot()
+        self.bmapplot.init_bmap()
 
     def on_change_basemap(self, event):    # pylint: disable=unused-argument
 
@@ -527,7 +526,6 @@ class EditionSections(tk.Tk):
         If the entries can be converted into float, a new basemap is created
         and the map is redrawn
         """
-
         try:
             self.bmapplot.lonw = float(self.entry_lonw_lab.get())
             self.bmapplot.lone = float(self.entry_lone_lab.get())
@@ -536,6 +534,7 @@ class EditionSections(tk.Tk):
             self.bmapplot.lon0 = float(self.entry_lon0_lab.get())
             self.bmapplot.blat = float(self.entry_blat_lab.get())
             self.bmapplot.init_bmap()
+            print('lalalal')
         except:
             self.entry_lonw_lab.set(self.bmapplot.lonw)
             self.entry_lone_lab.set(self.bmapplot.lone)
@@ -568,7 +567,7 @@ class EditionSections(tk.Tk):
             cmin = float(stout[0])
             cmax = float(stout[1])
             self.bmapplot.clim = str(cmin)+','+str(cmax)
-            self.bmapplot.init_plot()
+            self.bmapplot.init_bmap()
         except:
             self.entry_clim_lab.set(self.bmapplot.clim)
             
