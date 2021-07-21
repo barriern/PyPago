@@ -76,13 +76,12 @@ class MatplotlibEditionsSections(object):
         self.clim = None
 
         # settings of the basemap object
-        self.bmap = None
         self.latn = 90
         self.lats = -90
         self.lonw = -180
         self.lone = 180
         self.res = 'l'
-        self.lon0 = 270
+        self.lon0 = 0
         self.blat = 30
         self.proj = 'cyl'
         self.lonbg = None
@@ -134,12 +133,11 @@ class MatplotlibEditionsSections(object):
             self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.PlateCarree())
             self.plotax.set_extent([self.lonw, self.lone, self.lats, self.latn], ccrs.PlateCarree())
         elif str(self.proj) == 'npstere':  # northern hemisphere projection
-            self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.NorthPolarStereo())
-            self.plotax.set_extent([-180, 180, 90 - self.blat, 90], ccrs.PlateCarree())  
+            self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.NorthPolarStereo(central_longitude=self.lon0))
+            self.plotax.set_extent([-179.5, 179.5, 90 - self.blat, 90], ccrs.PlateCarree())  
         elif str(self.proj) == 'spstere':  # southern hemisphere projection
-            self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.SouthPolarStereo())
-            self.plotax.set_extent([-180, 180, -90, -90 + self.blat], ccrs.PlateCarree())  
-
+            self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.SouthPolarStereo(central_longitude=self.lon0))
+            self.plotax.set_extent([-179.5, 179.5, -90, -90 + self.blat], ccrs.PlateCarree())  
         else:  # this is the Lambert Conformal Projection (not masked)
             self.make_lambert()
 
@@ -214,7 +212,6 @@ class MatplotlibEditionsSections(object):
         At the beginning, if connected, we disconnect it.
         """
 
-        '''
         try:
             self.figure.canvas.mpl_disconnect(self.editsections)
         except:
@@ -232,9 +229,9 @@ class MatplotlibEditionsSections(object):
         for indice_sec in range(0, len(self.sections)):
             section_int = self.sections[indice_sec]
             # x,y coords of the sections
-            x_section, y_section = self.bmap(section_int.lon, section_int.lat)
-            self.bmap.plot(x_section, y_section, picker=1, label=section_int.name,
-                           color='Black', ax=self.plotax)  # we plot the sections
+            x_section, y_section = section_int.lon, section_int.lat
+            self.plotax.plot(x_section, y_section, picker=1, label=section_int.name,
+                           color='Black', transform=ccrs.PlateCarree())  # we plot the sections
 
         if self.secname is not None:  # if one section is selected
             section_int = self.sections[self.indsec]
@@ -243,10 +240,10 @@ class MatplotlibEditionsSections(object):
             y_section_points = self.plotax.lines[self.indsec].get_ydata()
             
             # we add a scatter plot for the edges, we set a picker of 5
-            self.scatter = self.bmap.scatter(x_section_points, y_section_points,
+            self.scatter = self.plotax.scatter(x_section_points, y_section_points,
                                              50, marker='o', picker=5,
                                              color='DarkOrange',
-                                             zorder=10000, ax=self.plotax)
+                                             zorder=10000)
 
             # we add the text of the segment
             for indice_segment in range(0, len(section_int.lon)-1):
@@ -269,15 +266,14 @@ class MatplotlibEditionsSections(object):
             self.newsections = self.figure.canvas.mpl_connect('button_press_event',
                                                               self.on_newsections_mplevent)
 
-        self.draw_par_med()  # we draw the lines of the meridians/parallels
-        '''
+        #self.draw_par_med()  # we draw the lines of the meridians/parallels
         self.canvas.draw()  # we draw the canvas
 
     def draw_par_med(self):
 
         """ Function that handles the drawing of the parallels/meridians """
         
-        gl = self.bmap.gridlines(**gridparams)
+        gl = self.plotax.gridlines(**gridparams)
         gl.top_labels = False
         gl.right_labels = False
         gl.xformatter = LONGITUDE_FORMATTER
@@ -351,8 +347,12 @@ class MatplotlibEditionsSections(object):
         elif (event.button == 2) | (event.button == 3): 
             # if left click and two points have been defined, creation of a new section
             if len(self.newoutx) >= 2:
-                lonnew, latnew = self.bmap(self.newoutx, self.newouty, inverse=True)
-                self.sections.append(pypago.sections.Section('section'+str(self.numbernew),
+                self.newoutx = np.array(self.newoutx)
+                self.newouty = np.array(self.newouty)    
+                coords = ccrs.PlateCarree().transform_points(self.plotax.projection, self.newoutx, self.newouty)
+                lonnew = coords[:, 0]
+                latnew = coords[:, 1]
+                self.sections.append(pypago.sections.Section('section' + str(self.numbernew),
                                                              lonnew, latnew, ['NE']*(len(self.newoutx)-1)))
 
             # reinitialisation of the section variables
@@ -380,8 +380,10 @@ class MatplotlibEditionsSections(object):
 
             self.indpoint = event.ind  # we recover the index of the point that was selected
             # we recover the coordinates of the point
-            self.xclick, self.yclick = self.bmap(self.sections[self.indsec].lon[self.indpoint],
-                                                 self.sections[self.indsec].lat[self.indpoint])
+            #self.xclick, self.yclick = self.bmap(self.sections[self.indsec].lon[self.indpoint],
+            #                                     self.sections[self.indsec].lat[self.indpoint])
+            self.xclick, self.yclick = self.plotax.projection.transform_point(self.sections[self.indsec].lon[self.indpoint],
+                                                 self.sections[self.indsec].lat[self.indpoint], ccrs.PlateCarree())
 
             # we activate the point move and point release events
             self.pointmove = self.figure.canvas.mpl_connect('motion_notify_event',
@@ -456,12 +458,14 @@ class MatplotlibEditionsSections(object):
             self.gui.button_del.configure(state='normal')
 
             # we draw the scatter plot on all the points of the selected section
-            self.scatter = self.bmap.scatter(self.plotax.lines[self.indsec].get_xdata(),
+            self.scatter = self.plotax.scatter(self.plotax.lines[self.indsec].get_xdata(),
                                              self.plotax.lines[self.indsec].get_ydata(),
                                              50, marker='o', picker=5,
-                                             color='DarkOrange', zorder=10000, ax=self.plotax)
+                                             color='DarkOrange', zorder=10000)
 
-            x_section, y_section = self.bmap(secint.lon, secint.lat)  # coordinates of the section
+            coords = self.plotax.projection.transform_points(ccrs.PlateCarree(), secint.lon, secint.lat)
+            x_section = coords[:, 0]
+            y_section = coords[:, 1]
 
             # we draw the text of segments
             for indice_seg in range(0, len(secint.lon)-1):
@@ -548,7 +552,9 @@ class MatplotlibEditionsSections(object):
         self.deltax = event.xdata - self.xclick  # this is the displacement
         self.deltay = event.ydata - self.yclick
 
-        xint, yint = self.bmap(secint.lon, secint.lat)  # we recover the section coordinates
+        coords = self.plotax.projection.transform_points(ccrs.PlateCarree(), secint.lon, secint.lat)  # we recover the section coordinates
+        xint = coords[:, 0]
+        yint = coords[:, 1]
 
         # this is the new X coordinate of the point
         xxx = np.empty(secint.lon.shape)
@@ -566,9 +572,9 @@ class MatplotlibEditionsSections(object):
 
         # we remove and redo the scatter plot
         self.scatter.remove()
-        self.scatter = self.bmap.scatter(xxx, yyy, 50, marker='o',
+        self.scatter = self.plotax.scatter(xxx, yyy, 50, marker='o',
                                          picker=5, color='DarkOrange',
-                                         zorder=10000, ax=self.plotax)
+                                         zorder=10000)
 
         # we add the segment text
         for indice_seg in range(0, len(secint.lon)-1):
@@ -589,9 +595,10 @@ class MatplotlibEditionsSections(object):
         self.figure.canvas.mpl_disconnect(self.pointrelease)
 
         # we recover the lon/lat coordinates of the new line section
-        lonout, latout = self.bmap(self.plotax.lines[self.indsec].get_xdata(),
-                                   self.plotax.lines[self.indsec].get_ydata(),
-                                   inverse=True)
+        coords = ccrs.PlateCarree().transform_points(self.plotax.projection, self.plotax.lines[self.indsec].get_xdata(),
+                                   self.plotax.lines[self.indsec].get_ydata())
+        lonout = coords[:, 0]
+        latout = coords[:, 1]
 
         # we change the lon/lat of the section
         self.sections[self.indsec].lon = lonout
