@@ -404,7 +404,7 @@ class MatplotlibGridModel(object):
         # we plot the sections that are on the domain
         for sec in range(0, nsec):
             self.plotax.plot(self.model_sections[sec].i, self.model_sections[sec].j,
-                             picker=1, label=self.model_sections[sec].name)
+                             picker=True, pickradius=1, label=self.model_sections[sec].name)
 
         # we connect the section edition mpl event
         self.editsec_event = self.figure.canvas.mpl_connect('pick_event', self.on_editsec)
