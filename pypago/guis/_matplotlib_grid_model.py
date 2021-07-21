@@ -155,7 +155,6 @@ class MatplotlibGridModel(object):
         """
 
         self.plotax.cla()
-        print self.dic_coord.mask.min(), self.dic_coord.mask.max()
         self.plotax.contour(self.dic_coord.mask, levels=[1 - np.spacing(1), 1], colors='k')
         self.plotax.set_xlim(self.lonlim)
         self.plotax.set_ylim(self.latlim)
