@@ -230,7 +230,7 @@ class MatplotlibEditionsSections(object):
             section_int = self.sections[indice_sec]
             # x,y coords of the sections
             x_section, y_section = section_int.lon, section_int.lat
-            self.plotax.plot(x_section, y_section, picker=1, label=section_int.name,
+            self.plotax.plot(x_section, y_section, picker=True, pickradius=1, label=section_int.name,
                            color='Black', transform=ccrs.PlateCarree())  # we plot the sections
 
         if self.secname is not None:  # if one section is selected
