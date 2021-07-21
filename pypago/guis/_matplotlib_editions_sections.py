@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import rcParams
 import tkinter.messagebox as tkMessageBox
-import cartopy.ccrs as ccrs
+import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 rcParams['lines.linewidth'] = 2
 rcParams['text.usetex'] = False
