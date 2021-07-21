@@ -526,6 +526,14 @@ class EditionSections(tk.Tk):
         If the entries can be converted into float, a new basemap is created
         and the map is redrawn
         """
+        
+        old_lonw = self.bmapplot.lonw
+        old_lone = self.bmapplot.lone
+        old_lats = self.bmapplot.lats
+        old_latn = self.bmapplot.latn
+        old_lon0 = self.bmapplot.lon0
+        old_blat = self.bmapplot.blat
+        
         try:
             self.bmapplot.lonw = float(self.entry_lonw_lab.get())
             self.bmapplot.lone = float(self.entry_lone_lab.get())
@@ -534,14 +542,20 @@ class EditionSections(tk.Tk):
             self.bmapplot.lon0 = float(self.entry_lon0_lab.get())
             self.bmapplot.blat = float(self.entry_blat_lab.get())
             self.bmapplot.init_bmap()
-            print('lalalal')
         except:
-            self.entry_lonw_lab.set(self.bmapplot.lonw)
-            self.entry_lone_lab.set(self.bmapplot.lone)
-            self.entry_lats_lab.set(self.bmapplot.lats)
-            self.entry_latn_lab.set(self.bmapplot.latn)
-            self.entry_lon0_lab.set(self.bmapplot.lon0)
-            self.entry_blat_lab.set(self.blat)
+            self.entry_lonw_lab.set(old_lonw)
+            self.entry_lone_lab.set(old_lone)
+            self.entry_lats_lab.set(old_lats)
+            self.entry_latn_lab.set(old_latn)
+            self.entry_lon0_lab.set(old_lon0)
+            self.entry_blat_lab.set(old_blat)
+            self.bmapplot.lonw = old_lonw
+            self.bmapplot.lone = old_lone
+            self.bmapplot.lats = old_lats
+            self.bmapplot.latn = old_latn
+            self.bmapplot.lon0 = old_lon0
+            self.bmapplot.blat = old_blat     
+            self.bmapplot.init_bmap()
 
     def on_change_sec_coords(self, event):    # pylint: disable=unused-argument
 
