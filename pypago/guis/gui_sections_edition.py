@@ -354,7 +354,7 @@ class EditionSections(tk.Tk):
         It destroys the tkinter frame
         """
 
-        self.destroy()
+        self.root.destroy()
 
     def on_background(self):
 
@@ -571,6 +571,9 @@ class EditionSections(tk.Tk):
             self.bmapplot.init_plot()
         except:
             self.entry_clim_lab.set(self.bmapplot.clim)
+            
+    def exit(self):
+        self.frame.destroy()
 
 if __name__ == "__main__":
     PAGOFRAME = EditionSections(None)

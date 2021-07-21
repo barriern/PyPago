@@ -19,8 +19,15 @@ from matplotlib import rcParams
 import tkinter.messagebox as tkMessageBox
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+import matplotlib.ticker as mticker
+
 rcParams['lines.linewidth'] = 2
 rcParams['text.usetex'] = False
+
+gridparams = {'crs': ccrs.PlateCarree(),
+              'draw_labels':True, 'linewidth':0.5,
+              'color':'gray', 'alpha':0.5, 'linestyle':'--'}
 
 
 class MatplotlibEditionsSections(object):
@@ -57,7 +64,7 @@ class MatplotlibEditionsSections(object):
 
         # creation of the Matplotlib frame
         self.figure = matplotlib.figure.Figure(figsize=(2, 2))
-        self.plotax = self.figure.add_axes(self.plotaxcoords)
+        self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.PlateCarree())
         self.cbarax = self.figure.add_axes(self.cbaraxcoords)
         self.cbarax.axis('off')
         self.canvas = FigureCanvas(self.figure, master=gui)
@@ -118,22 +125,26 @@ class MatplotlibEditionsSections(object):
         This function initialised the basemap object, when the coordinates,
         resolution and projections are changed.
         """
-
-        if str(self.proj) == 'cyl':  # cylindrical projection: parameters are domain limits
-            self.bmap = plt.axes(projection=ccrs.PlateCarree())
-            self.bmap.set_extent([self.lonw, self.lone, self.lats, self.latn], ccrs.PlateCarree())
-
-        elif str(self.proj) == 'npstere':  # northern hemisphere projection
-            self.bmap = plt.axes(projection=ccrs.NorthPolarStereo())
-            self.bmap.set_extent([-180, 180, 90 - self.blat, 90], ccrs.PlateCarree())  
+        print('Inside init')
         
+        self.figure.clf()  # we first clean the figure
+        #self.cbarax = self.figure.add_axes(self.cbaraxcoords)  # and the colormap axes
+        #self.cbarax.axis('off')  # we "hide" the axis of the colormap
+
+        if str(self.proj) == 'cyl':  # cylindrical projection: parameters are domain 
+            self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.PlateCarree())
+            self.plotax.set_extent([self.lonw, self.lone, self.lats, self.latn], ccrs.PlateCarree())
+        elif str(self.proj) == 'npstere':  # northern hemisphere projection
+            self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.NorthPolarStereo())
+            self.plotax.set_extent([-180, 180, 90 - self.blat, 90], ccrs.PlateCarree())  
         elif str(self.proj) == 'spstere':  # southern hemisphere projection
-            self.bmap = plt.axes(projection=ccrs.SouthPolarStereo())
-            self.bmap.set_extent([-180, 180, -90, -90 + self.blat], ccrs.PlateCarree())  
+            self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.SouthPolarStereo())
+            self.plotax.set_extent([-180, 180, -90, -90 + self.blat], ccrs.PlateCarree())  
 
         else:  # this is the Lambert Conformal Projection (not masked)
             self.make_lambert()
-
+        
+        print(self.plotax)
         self.init_plot()
         self.canvas.draw()
 
@@ -146,20 +157,13 @@ class MatplotlibEditionsSections(object):
         The sections are drawn here by using the :py:func:`draw_sections` function
         """
 
-        self.figure.clf()  # we first clean the figure
-        self.plotax = self.figure.add_axes(self.plotaxcoords)  # we redefine the map axes
-        self.cbarax = self.figure.add_axes(self.cbaraxcoords)  # and the colormap axes
-        self.cbarax.axis('off')  # we "hide" the axis of the colormap
-
         if self.gui.combobox_mode.get() == 'ETOPO':
-            #self.bmap.etopo(zorder=-1000, ax=self.plotax)
-            #self.bmap.drawcoastlines(color='k', linewidth=1, ax=self.plotax)
-            self.bmap.stock_img()
-            self.bmap.coastlines()
+            self.plotax.stock_img()
+            self.plotax.coastlines()  
         elif self.gui.combobox_mode.get() == 'Filled continents':
             scale = self.gui.combobox_res.get()
-            self.bmap.add_feature(cfeature.LAND.with_scale(scale), edgecolor='k', linewidth=1, zorder=-1000)
-            self.bmap.add_feature(cfeature.LAND.with_scale(scale), facecolor='darkgray', linewidth=1, zorder=-1001)
+            self.plotax.add_feature(cfeature.LAND.with_scale(scale), edgecolor='k', linewidth=1, zorder=-1000)
+            self.plotax.add_feature(cfeature.LAND.with_scale(scale), facecolor='darkgray', linewidth=1, zorder=-1001)
 
         
         # if self.gui.combobox_mode.get() == 'Map Background':
@@ -212,6 +216,7 @@ class MatplotlibEditionsSections(object):
         At the beginning, if connected, we disconnect it.
         """
 
+        '''
         try:
             self.figure.canvas.mpl_disconnect(self.editsections)
         except:
@@ -267,25 +272,35 @@ class MatplotlibEditionsSections(object):
                                                               self.on_newsections_mplevent)
 
         self.draw_par_med()  # we draw the lines of the meridians/parallels
+        '''
         self.canvas.draw()  # we draw the canvas
 
     def draw_par_med(self):
 
         """ Function that handles the drawing of the parallels/meridians """
+        
+        gl = self.bmap.gridlines(**gridparams)
+        gl.top_labels = False
+        gl.right_labels = False
+        gl.xformatter = LONGITUDE_FORMATTER
+        gl.yformatter = LATITUDE_FORMATTER
 
         if self.proj == 'cyl':
-            self.bmap.drawparallels(np.linspace(self.lats, self.latn, 11), ax=self.plotax)
-            self.bmap.drawmeridians(np.linspace(self.lonw, self.lone, 11), ax=self.plotax)
+            ylocators = np.linspace(self.lats, self.latn, 11)
+            xlocators = np.linspace(self.lonw, self.lone, 11)
 
         elif self.proj in ['npstere', 'spstere']:
             if self.proj == 'npstere':
-                self.bmap.drawparallels(np.arange(90-self.blat, 90, 2), ax=self.plotax)
+                ylocators = np.arange(90-self.blat, 90, 2)
             else:
-                self.bmap.drawparallels(-np.arange(90-self.blat, 90, 2), ax=self.plotax)
-            self.bmap.drawmeridians(np.linspace(-180, 180, 11), ax=self.plotax)
+                ylocators = -np.arange(90-self.blat, 90, 2)
+            xlocators = np.linspace(-180, 180, 11)
         else:
-            self.bmap.drawparallels(np.linspace(self.lats, self.latn, 11), ax=self.plotax)
-            self.bmap.drawmeridians(np.linspace(self.lonw, self.lone, 11), ax=self.plotax)
+            ylocators = np.linspace(self.lats, self.latn, 11)
+            xlocators = np.linspace(self.lonw, self.lone, 11)
+
+        gl.xlocator = mticker.FixedLocator(xlocators)
+        gl.ylocator = mticker.FixedLocator(ylocators)
 
         self.canvas.draw()
 
@@ -684,8 +699,8 @@ class MatplotlibEditionsSections(object):
         if hem is not None:  # if hemisphere is not none, the lcc projection can be used is
             
             lon0 = 0.5*(self.lone + self.lonw)
-            self.bmap = ccrs.LambertConformal(central_longitude=lon0)
-            self.bmap.set_extent([self.lonw, self.lone, self.lats, self.latn], ccrs.PlateCarree())
+            self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.LambertConformal(central_longitude=lon0))
+            self.plotax.set_extent([self.lonw, self.lone, self.lats, self.latn], ccrs.PlateCarree())
 
             N = 100
 
@@ -704,8 +719,8 @@ class MatplotlibEditionsSections(object):
             x = np.concatenate([x0, x1, x2, x3])
             y = np.concatenate([y0, y1, y2, y3])
             path = mpath.Path(np.array([x, y]).T)
-            self.bmap.set_boundary(path, transform=ccrs.PlateCarree())
-            
+            self.plotax.set_boundary(path, transform=ccrs.PlateCarree())
+                        
         else:
             # If our domain crosses the equator, lcc cannot be used
             # -> we change the projection to cyl
