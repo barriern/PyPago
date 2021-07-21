@@ -119,31 +119,30 @@ class EditionSections(tk.Tk):
 
         self.label_res = tk.Label(self, text='Resolution', anchor="w")
         self.label_res.grid(row=4, column=2)
-        self.combobox_res = ttk.Combobox(self, values=['c', 'l', 'i', 'h', 'f'])
+        self.combobox_res = ttk.Combobox(self, values=['110m', '50m', '10m'])
         self.combobox_res.grid(row=4, column=3)
-        self.combobox_res.set('c')
+        self.combobox_res.set('110m')
 
         self.label_mode = tk.Label(self, text='Plot mode', anchor="w")
         self.label_mode.grid(row=5, column=0)
         self.combobox_mode = ttk.Combobox(self,
                                           values=['Filled continents',
-                                                  'ETOPO',
-                                                  'Map Background'])
+                                                  'ETOPO'])
         self.combobox_mode.grid(row=5, column=1)
         self.combobox_mode.set('Filled continents')
 
-        self.label_cmap = tk.Label(self, text='Colormap', anchor="w")
-        self.label_cmap.grid(row=5, column=2)
-        self.combobox_cmap = ttk.Combobox(self, values=self.bmapplot.cmapnames)
-        self.combobox_cmap.grid(row=5, column=3)
-        self.combobox_cmap.set('jet')
+        # self.label_cmap = tk.Label(self, text='Colormap', anchor="w")
+        # self.label_cmap.grid(row=5, column=2)
+        # self.combobox_cmap = ttk.Combobox(self, values=self.bmapplot.cmapnames)
+        # self.combobox_cmap.grid(row=5, column=3)
+        # self.combobox_cmap.set('jet')
 
-        self.label_clim = tk.Label(self, text='Colormap lim.', anchor="w")
-        self.label_clim.grid(row=6, column=0)
-        self.entry_clim_lab = tk.StringVar()
-        self.entry_clim = tk.Entry(self, textvariable=self.entry_clim_lab)
-        self.entry_clim.grid(row=6, column=1)
-        self.entry_clim_lab.set('')
+        # self.label_clim = tk.Label(self, text='Colormap lim.', anchor="w")
+        # self.label_clim.grid(row=6, column=0)
+        # self.entry_clim_lab = tk.StringVar()
+        # self.entry_clim = tk.Entry(self, textvariable=self.entry_clim_lab)
+        # self.entry_clim.grid(row=6, column=1)
+        # self.entry_clim_lab.set('')
 
         self.label_secname = tk.Label(self, text='Section name', anchor="w")
         self.label_secname.grid(row=1, column=4)
@@ -213,10 +212,10 @@ class EditionSections(tk.Tk):
         self.grid_columnconfigure(6, weight=1)
         self.grid_rowconfigure(7, weight=1)
 
-        self.entry_clim.configure(state='disabled')
-        self.combobox_cmap.configure(state='disabled')
-        self.label_clim.configure(state='disabled')
-        self.label_cmap.configure(state='disabled')
+        # self.entry_clim.configure(state='disabled')
+        # self.combobox_cmap.configure(state='disabled')
+        # self.label_clim.configure(state='disabled')
+        # self.label_cmap.configure(state='disabled')
 
     def bind_functions(self):
 
@@ -236,10 +235,10 @@ class EditionSections(tk.Tk):
         self.combobox_mode.bind("<<ComboboxSelected>>", self.on_change_plot)
 
         # Change in clim -> change the clim attribute, redraw
-        self.entry_clim.bind("<Return>", self.on_change_clim)
+        # self.entry_clim.bind("<Return>", self.on_change_clim)
 
         # Change in colormap -> only need to redraw
-        self.combobox_cmap.bind("<<ComboboxSelected>>", self.on_change_plot)
+        # self.combobox_cmap.bind("<<ComboboxSelected>>", self.on_change_plot)
 
         # Function associated with change in direction
         self.combobox_seg.bind("<<ComboboxSelected>>", self.on_change_dir)
@@ -266,11 +265,13 @@ class EditionSections(tk.Tk):
         file_menu.add_command(label="Quit", command=self.on_quit)
         menubar.add_cascade(label="File", menu=file_menu)
 
-        background_menu = tk.Menu(menubar, tearoff=0)  # create a background menu
-        # Add a load background item
-        background_menu.add_command(label='Load background',
-                                    command=self.on_background)
-        menubar.add_cascade(label="Background", menu=background_menu)
+        
+        # background_menu = tk.Menu(menubar, tearoff=0)  # create a background menu
+        # # Add a load background item
+        # background_menu.add_command(label='Load background',
+        #                             command=self.on_background)
+        # menubar.add_cascade(label="Background", menu=background_menu)
+        
 
         self.config(menu=menubar)
 
@@ -353,7 +354,7 @@ class EditionSections(tk.Tk):
         It destroys the tkinter frame
         """
 
-        self.destroy()
+        self.root.destroy()
 
     def on_background(self):
 
@@ -390,7 +391,6 @@ class EditionSections(tk.Tk):
             self.entry_lats_lab.set(self.bmapplot.lats)
             self.entry_latn_lab.set(self.bmapplot.latn)
             self.bmapplot.init_bmap()
-            self.bmapplot.init_plot()  # we redo the plot
 
     def on_change_working_mode(self):
 
@@ -466,7 +466,7 @@ class EditionSections(tk.Tk):
             self.combobox_cmap.configure(state='normal')
             self.label_clim.configure(state='normal')
             self.label_cmap.configure(state='normal')
-        self.bmapplot.init_plot()
+        self.bmapplot.init_bmap()
 
     def on_change_basemap(self, event):    # pylint: disable=unused-argument
 
@@ -526,7 +526,14 @@ class EditionSections(tk.Tk):
         If the entries can be converted into float, a new basemap is created
         and the map is redrawn
         """
-
+        
+        old_lonw = self.bmapplot.lonw
+        old_lone = self.bmapplot.lone
+        old_lats = self.bmapplot.lats
+        old_latn = self.bmapplot.latn
+        old_lon0 = self.bmapplot.lon0
+        old_blat = self.bmapplot.blat
+        
         try:
             self.bmapplot.lonw = float(self.entry_lonw_lab.get())
             self.bmapplot.lone = float(self.entry_lone_lab.get())
@@ -536,12 +543,19 @@ class EditionSections(tk.Tk):
             self.bmapplot.blat = float(self.entry_blat_lab.get())
             self.bmapplot.init_bmap()
         except:
-            self.entry_lonw_lab.set(self.bmapplot.lonw)
-            self.entry_lone_lab.set(self.bmapplot.lone)
-            self.entry_lats_lab.set(self.bmapplot.lats)
-            self.entry_latn_lab.set(self.bmapplot.latn)
-            self.entry_lon0_lab.set(self.bmapplot.lon0)
-            self.entry_blat_lab.set(self.blat)
+            self.entry_lonw_lab.set(old_lonw)
+            self.entry_lone_lab.set(old_lone)
+            self.entry_lats_lab.set(old_lats)
+            self.entry_latn_lab.set(old_latn)
+            self.entry_lon0_lab.set(old_lon0)
+            self.entry_blat_lab.set(old_blat)
+            self.bmapplot.lonw = old_lonw
+            self.bmapplot.lone = old_lone
+            self.bmapplot.lats = old_lats
+            self.bmapplot.latn = old_latn
+            self.bmapplot.lon0 = old_lon0
+            self.bmapplot.blat = old_blat     
+            self.bmapplot.init_bmap()
 
     def on_change_sec_coords(self, event):    # pylint: disable=unused-argument
 
@@ -567,9 +581,12 @@ class EditionSections(tk.Tk):
             cmin = float(stout[0])
             cmax = float(stout[1])
             self.bmapplot.clim = str(cmin)+','+str(cmax)
-            self.bmapplot.init_plot()
+            self.bmapplot.init_bmap()
         except:
             self.entry_clim_lab.set(self.bmapplot.clim)
+            
+    def exit(self):
+        self.frame.destroy()
 
 if __name__ == "__main__":
     PAGOFRAME = EditionSections(None)

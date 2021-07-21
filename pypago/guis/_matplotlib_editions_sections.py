@@ -6,6 +6,7 @@ the :py:class:`pypago.guis.gui_edition_sections.EditionSections`
 class
 """
 
+import matplotlib.path as mpath
 import pypago.pyio
 import pypago.misc
 import pypago.sections
@@ -14,11 +15,19 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits.basemap import Basemap
 from matplotlib import rcParams
 import tkinter.messagebox as tkMessageBox
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+import matplotlib.ticker as mticker
+
 rcParams['lines.linewidth'] = 2
 rcParams['text.usetex'] = False
+
+gridparams = {'crs': ccrs.PlateCarree(),
+              'draw_labels':True, 'linewidth':0.5,
+              'color':'gray', 'alpha':0.5, 'linestyle':'--'}
 
 
 class MatplotlibEditionsSections(object):
@@ -55,7 +64,7 @@ class MatplotlibEditionsSections(object):
 
         # creation of the Matplotlib frame
         self.figure = matplotlib.figure.Figure(figsize=(2, 2))
-        self.plotax = self.figure.add_axes(self.plotaxcoords)
+        self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.PlateCarree())
         self.cbarax = self.figure.add_axes(self.cbaraxcoords)
         self.cbarax.axis('off')
         self.canvas = FigureCanvas(self.figure, master=gui)
@@ -67,13 +76,12 @@ class MatplotlibEditionsSections(object):
         self.clim = None
 
         # settings of the basemap object
-        self.bmap = None
         self.latn = 90
         self.lats = -90
         self.lonw = -180
         self.lone = 180
         self.res = 'l'
-        self.lon0 = 270
+        self.lon0 = 0
         self.blat = 30
         self.proj = 'cyl'
         self.lonbg = None
@@ -116,22 +124,20 @@ class MatplotlibEditionsSections(object):
         This function initialised the basemap object, when the coordinates,
         resolution and projections are changed.
         """
+        
+        self.figure.clf()  # we first clean the figure
+        #self.cbarax = self.figure.add_axes(self.cbaraxcoords)  # and the colormap axes
+        #self.cbarax.axis('off')  # we "hide" the axis of the colormap
 
-        if str(self.proj) == 'cyl':  # cylindrical projection: parameters are domain limits
-            self.bmap = Basemap(llcrnrlon=self.lonw, urcrnrlon=self.lone, llcrnrlat=self.lats,
-                                urcrnrlat=self.latn, projection=self.proj, ax=self.plotax,
-                                resolution=self.gui.combobox_res.get(), suppress_ticks=False)
-
+        if str(self.proj) == 'cyl':  # cylindrical projection: parameters are domain
+            self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.PlateCarree())
+            self.plotax.set_extent([self.lonw, self.lone, self.lats, self.latn], ccrs.PlateCarree())
         elif str(self.proj) == 'npstere':  # northern hemisphere projection
-            self.bmap = Basemap(lon_0=self.lon0, boundinglat=90-self.blat,
-                                projection=self.proj, ax=self.plotax,
-                                resolution=self.gui.combobox_res.get())
-
+            self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.NorthPolarStereo(central_longitude=self.lon0))
+            self.plotax.set_extent([-179.5, 179.5, 90 - self.blat, 90], ccrs.PlateCarree())  
         elif str(self.proj) == 'spstere':  # southern hemisphere projection
-            self.bmap = Basemap(lon_0=self.lon0, boundinglat=-90+self.blat,
-                                projection=self.proj, ax=self.plotax,
-                                resolution=self.gui.combobox_res.get())
-
+            self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.SouthPolarStereo(central_longitude=self.lon0))
+            self.plotax.set_extent([-179.5, 179.5, -90, -90 + self.blat], ccrs.PlateCarree())  
         else:  # this is the Lambert Conformal Projection (not masked)
             self.make_lambert()
 
@@ -146,54 +152,50 @@ class MatplotlibEditionsSections(object):
 
         The sections are drawn here by using the :py:func:`draw_sections` function
         """
-
-        self.figure.clf()  # we first clean the figure
-        self.plotax = self.figure.add_axes(self.plotaxcoords)  # we redefine the map axes
-        self.cbarax = self.figure.add_axes(self.cbaraxcoords)  # and the colormap axes
-        self.cbarax.axis('off')  # we "hide" the axis of the colormap
-
+        
+        scale = self.gui.combobox_res.get()
         if self.gui.combobox_mode.get() == 'ETOPO':
-            self.bmap.etopo(zorder=-1000, ax=self.plotax)
-            self.bmap.drawcoastlines(color='k', linewidth=1, ax=self.plotax)
-
+            self.plotax.stock_img()
+            self.plotax.coastlines(resolution=scale)  
         elif self.gui.combobox_mode.get() == 'Filled continents':
-            self.bmap.drawcoastlines(color='k', linewidth=1, zorder=-1000, ax=self.plotax)
-            self.bmap.fillcontinents(color='DarkGray', zorder=-1001, ax=self.plotax)
+            self.plotax.add_feature(cfeature.LAND.with_scale(scale), edgecolor='k', linewidth=1, zorder=-1000)
+            self.plotax.add_feature(cfeature.LAND.with_scale(scale), facecolor='darkgray', linewidth=1, zorder=-1001)
 
-        if self.gui.combobox_mode.get() == 'Map Background':
+        
+        # if self.gui.combobox_mode.get() == 'Map Background':
 
-            if 1:#try:
+        #     if 1:#try:
 
-                xmap, ymap = self.bmap(self.lonbg, self.latbg)
+        #         xmap, ymap = self.bmap(self.lonbg, self.latbg)
 
-                if self.clim is None:
-                    cmin = self.mapbg.min()
-                    cmax = self.mapbg.max()
-                    self.clim = str(cmin) + ',' + str(cmax)
-                    self.gui.entry_clim_lab.set(self.clim)
-                    levels = np.linspace(cmin, cmax, 21)
+        #         if self.clim is None:
+        #             cmin = self.mapbg.min()
+        #             cmax = self.mapbg.max()
+        #             self.clim = str(cmin) + ',' + str(cmax)
+        #             self.gui.entry_clim_lab.set(self.clim)
+        #             levels = np.linspace(cmin, cmax, 21)
 
-                else:
-                    stout = self.gui.entry_clim_lab.get().split(',')
-                    cmin = float(stout[0])
-                    cmax = float(stout[1])
-                    levels = np.linspace(cmin, cmax, 21)
+        #         else:
+        #             stout = self.gui.entry_clim_lab.get().split(',')
+        #             cmin = float(stout[0])
+        #             cmax = float(stout[1])
+        #             levels = np.linspace(cmin, cmax, 21)
 
-                cscont = self.bmap.contourf(xmap, ymap, self.mapbg, levels=levels,
-                                            ax=self.plotax, cmap=self.gui.combobox_cmap.get(),
-                                            extend='both')
+        #         cscont = self.bmap.contourf(xmap, ymap, self.mapbg, levels=levels,
+        #                                     ax=self.plotax, cmap=self.gui.combobox_cmap.get(),
+        #                                     extend='both')
 
-                try:
-                    plt.colorbar(cscont, ax=self.cbarax, orientation='horizontal')
-                except:
-                    pass
+        #         try:
+        #             plt.colorbar(cscont, ax=self.cbarax, orientation='horizontal')
+        #         except:
+        #             pass
 
-                self.bmap.drawcoastlines(color='k', linewidth=1, ax=self.plotax)
+        #         self.bmap.drawcoastlines(color='k', linewidth=1, ax=self.plotax)
 
-            else:#except:
-                tkMessageBox.showinfo('Oups!', 'Problem with the map background. You might need to check the NetCDF file')  # pylint: disable=line-too-long
-                self.gui.combobox_mode.set('Filled continents')
-                self.init_plot()
+        #     else:#except:
+        #         tkMessageBox.showinfo('Oups!', 'Problem with the map background. You might need to check the NetCDF file')  # pylint: disable=line-too-long
+        #         self.gui.combobox_mode.set('Filled continents')
+        #         self.init_plot()
 
         self.draw_sections()
 
@@ -227,9 +229,9 @@ class MatplotlibEditionsSections(object):
         for indice_sec in range(0, len(self.sections)):
             section_int = self.sections[indice_sec]
             # x,y coords of the sections
-            x_section, y_section = self.bmap(section_int.lon, section_int.lat)
-            self.bmap.plot(x_section, y_section, picker=1, label=section_int.name,
-                           color='Black', ax=self.plotax)  # we plot the sections
+            x_section, y_section = section_int.lon, section_int.lat
+            self.plotax.plot(x_section, y_section, picker=True, pickradius=1, label=section_int.name,
+                           color='Black', transform=ccrs.PlateCarree())  # we plot the sections
 
         if self.secname is not None:  # if one section is selected
             section_int = self.sections[self.indsec]
@@ -238,10 +240,10 @@ class MatplotlibEditionsSections(object):
             y_section_points = self.plotax.lines[self.indsec].get_ydata()
             
             # we add a scatter plot for the edges, we set a picker of 5
-            self.scatter = self.bmap.scatter(x_section_points, y_section_points,
+            self.scatter = self.plotax.scatter(x_section_points, y_section_points,
                                              50, marker='o', picker=5,
                                              color='DarkOrange',
-                                             zorder=10000, ax=self.plotax)
+                                             zorder=10000)
 
             # we add the text of the segment
             for indice_segment in range(0, len(section_int.lon)-1):
@@ -264,26 +266,35 @@ class MatplotlibEditionsSections(object):
             self.newsections = self.figure.canvas.mpl_connect('button_press_event',
                                                               self.on_newsections_mplevent)
 
-        self.draw_par_med()  # we draw the lines of the meridians/parallels
+        #self.draw_par_med()  # we draw the lines of the meridians/parallels
         self.canvas.draw()  # we draw the canvas
 
     def draw_par_med(self):
 
         """ Function that handles the drawing of the parallels/meridians """
+        
+        gl = self.plotax.gridlines(**gridparams)
+        gl.top_labels = False
+        gl.right_labels = False
+        gl.xformatter = LONGITUDE_FORMATTER
+        gl.yformatter = LATITUDE_FORMATTER
 
         if self.proj == 'cyl':
-            self.bmap.drawparallels(np.linspace(self.lats, self.latn, 11), ax=self.plotax)
-            self.bmap.drawmeridians(np.linspace(self.lonw, self.lone, 11), ax=self.plotax)
+            ylocators = np.linspace(self.lats, self.latn, 11)
+            xlocators = np.linspace(self.lonw, self.lone, 11)
 
         elif self.proj in ['npstere', 'spstere']:
             if self.proj == 'npstere':
-                self.bmap.drawparallels(np.arange(90-self.blat, 90, 2), ax=self.plotax)
+                ylocators = np.arange(90-self.blat, 90, 2)
             else:
-                self.bmap.drawparallels(-np.arange(90-self.blat, 90, 2), ax=self.plotax)
-            self.bmap.drawmeridians(np.linspace(-180, 180, 11), ax=self.plotax)
+                ylocators = -np.arange(90-self.blat, 90, 2)
+            xlocators = np.linspace(-180, 180, 11)
         else:
-            self.bmap.drawparallels(np.linspace(self.lats, self.latn, 11), ax=self.plotax)
-            self.bmap.drawmeridians(np.linspace(self.lonw, self.lone, 11), ax=self.plotax)
+            ylocators = np.linspace(self.lats, self.latn, 11)
+            xlocators = np.linspace(self.lonw, self.lone, 11)
+
+        gl.xlocator = mticker.FixedLocator(xlocators)
+        gl.ylocator = mticker.FixedLocator(ylocators)
 
         self.canvas.draw()
 
@@ -336,8 +347,12 @@ class MatplotlibEditionsSections(object):
         elif (event.button == 2) | (event.button == 3): 
             # if left click and two points have been defined, creation of a new section
             if len(self.newoutx) >= 2:
-                lonnew, latnew = self.bmap(self.newoutx, self.newouty, inverse=True)
-                self.sections.append(pypago.sections.Section('section'+str(self.numbernew),
+                self.newoutx = np.array(self.newoutx)
+                self.newouty = np.array(self.newouty)    
+                coords = ccrs.PlateCarree().transform_points(self.plotax.projection, self.newoutx, self.newouty)
+                lonnew = coords[:, 0]
+                latnew = coords[:, 1]
+                self.sections.append(pypago.sections.Section('section' + str(self.numbernew),
                                                              lonnew, latnew, ['NE']*(len(self.newoutx)-1)))
 
             # reinitialisation of the section variables
@@ -365,8 +380,10 @@ class MatplotlibEditionsSections(object):
 
             self.indpoint = event.ind  # we recover the index of the point that was selected
             # we recover the coordinates of the point
-            self.xclick, self.yclick = self.bmap(self.sections[self.indsec].lon[self.indpoint],
-                                                 self.sections[self.indsec].lat[self.indpoint])
+            #self.xclick, self.yclick = self.bmap(self.sections[self.indsec].lon[self.indpoint],
+            #                                     self.sections[self.indsec].lat[self.indpoint])
+            self.xclick, self.yclick = self.plotax.projection.transform_point(self.sections[self.indsec].lon[self.indpoint],
+                                                 self.sections[self.indsec].lat[self.indpoint], ccrs.PlateCarree())
 
             # we activate the point move and point release events
             self.pointmove = self.figure.canvas.mpl_connect('motion_notify_event',
@@ -441,12 +458,14 @@ class MatplotlibEditionsSections(object):
             self.gui.button_del.configure(state='normal')
 
             # we draw the scatter plot on all the points of the selected section
-            self.scatter = self.bmap.scatter(self.plotax.lines[self.indsec].get_xdata(),
+            self.scatter = self.plotax.scatter(self.plotax.lines[self.indsec].get_xdata(),
                                              self.plotax.lines[self.indsec].get_ydata(),
                                              50, marker='o', picker=5,
-                                             color='DarkOrange', zorder=10000, ax=self.plotax)
+                                             color='DarkOrange', zorder=10000)
 
-            x_section, y_section = self.bmap(secint.lon, secint.lat)  # coordinates of the section
+            coords = self.plotax.projection.transform_points(ccrs.PlateCarree(), secint.lon, secint.lat)
+            x_section = coords[:, 0]
+            y_section = coords[:, 1]
 
             # we draw the text of segments
             for indice_seg in range(0, len(secint.lon)-1):
@@ -533,7 +552,9 @@ class MatplotlibEditionsSections(object):
         self.deltax = event.xdata - self.xclick  # this is the displacement
         self.deltay = event.ydata - self.yclick
 
-        xint, yint = self.bmap(secint.lon, secint.lat)  # we recover the section coordinates
+        coords = self.plotax.projection.transform_points(ccrs.PlateCarree(), secint.lon, secint.lat)  # we recover the section coordinates
+        xint = coords[:, 0]
+        yint = coords[:, 1]
 
         # this is the new X coordinate of the point
         xxx = np.empty(secint.lon.shape)
@@ -551,9 +572,9 @@ class MatplotlibEditionsSections(object):
 
         # we remove and redo the scatter plot
         self.scatter.remove()
-        self.scatter = self.bmap.scatter(xxx, yyy, 50, marker='o',
+        self.scatter = self.plotax.scatter(xxx, yyy, 50, marker='o',
                                          picker=5, color='DarkOrange',
-                                         zorder=10000, ax=self.plotax)
+                                         zorder=10000)
 
         # we add the segment text
         for indice_seg in range(0, len(secint.lon)-1):
@@ -574,9 +595,10 @@ class MatplotlibEditionsSections(object):
         self.figure.canvas.mpl_disconnect(self.pointrelease)
 
         # we recover the lon/lat coordinates of the new line section
-        lonout, latout = self.bmap(self.plotax.lines[self.indsec].get_xdata(),
-                                   self.plotax.lines[self.indsec].get_ydata(),
-                                   inverse=True)
+        coords = ccrs.PlateCarree().transform_points(self.plotax.projection, self.plotax.lines[self.indsec].get_xdata(),
+                                   self.plotax.lines[self.indsec].get_ydata())
+        lonout = coords[:, 0]
+        latout = coords[:, 1]
 
         # we change the lon/lat of the section
         self.sections[self.indsec].lon = lonout
@@ -680,39 +702,30 @@ class MatplotlibEditionsSections(object):
             hem = None
 
         if hem is not None:  # if hemisphere is not none, the lcc projection can be used is
-
-            # Here, we convert the Python lcc to a NCL-like lcc (cf. my script lambert.py)
-            if hem == 'NH':
-                lat2 = 89.999
-                lat1 = 0.001
-            else:
-                lat2 = -89.999
-                lat1 = -0.001
+            
             lon0 = 0.5*(self.lone + self.lonw)
-            self.bmap = Basemap(llcrnrlon=self.lonw, llcrnrlat=self.lats,
-                                urcrnrlon=self.lone, urcrnrlat=self.latn,
-                                lon_0=lon0, lat_1=lat1, lat_2=lat2,
-                                projection=self.proj, resolution='c')
+            self.plotax = self.figure.add_axes(self.plotaxcoords, projection=ccrs.LambertConformal(central_longitude=lon0))
+            self.plotax.set_extent([self.lonw, self.lone, self.lats, self.latn], ccrs.PlateCarree())
 
-            if hem == 'NH':
-                xmin = self.bmap(self.lonw, self.lats)[0]
-                xmax = self.bmap(self.lone, self.lats)[0]
-                ymin = self.bmap(lon0, self.lats)[1]
-                ymax = self.bmap(self.lonw, self.latn)[1]
-            else:
-                xmin = self.bmap(self.lonw, self.latn)[0]
-                xmax = self.bmap(self.lone, self.latn)[0]
-                ymax = self.bmap(lon0, self.latn)[1]
-                ymin = self.bmap(self.lonw, self.lats)[1]
+            N = 100
 
-            lonmin, latmin = self.bmap(xmin, ymin, inverse=True)
-            lonmax, latmax = self.bmap(xmax, ymax, inverse=True)
+            x0 = np.linspace(self.lonw, self.lone, N)
+            y0 = np.full((N), self.lats)
 
-            self.bmap = Basemap(llcrnrlon=lonmin, llcrnrlat=latmin,
-                                urcrnrlon=lonmax, urcrnrlat=latmax, lon_0=lon0,
-                                lat_1=lat1, lat_2=lat2, projection=self.proj,
-                                resolution=self.gui.combobox_res.get(), ax=self.plotax)
+            y1 = np.linspace(self.lats, self.latn, N)
+            x1 = np.full((N), self.lone)
 
+            x2 = np.linspace(self.lonw, self.lone, N)[::-1]
+            y2 = np.full((N), self.latn)
+
+            y3 = np.linspace(self.lats, self.latn, N)[::-1]
+            x3 = np.full((N), self.lonw)
+
+            x = np.concatenate([x0, x1, x2, x3])
+            y = np.concatenate([y0, y1, y2, y3])
+            path = mpath.Path(np.array([x, y]).T)
+            self.plotax.set_boundary(path, transform=ccrs.PlateCarree())
+                        
         else:
             # If our domain crosses the equator, lcc cannot be used
             # -> we change the projection to cyl
