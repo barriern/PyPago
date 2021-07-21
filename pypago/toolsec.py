@@ -175,9 +175,9 @@ def distance(lat1, lon1, lat2, lon2, geoid):
     :rtype: float
     """
 
-    output = geoid.inv(lon1, lat1, lon2, lat2)
+    output = geoid.inverse([lon1, lat1], [lon2, lat2])[0][0]
 
-    return output[-1]
+    return output
 
 def areainsec(veci, vecj, faces, areaw, arean):
 
