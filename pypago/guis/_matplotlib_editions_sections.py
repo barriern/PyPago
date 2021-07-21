@@ -125,7 +125,6 @@ class MatplotlibEditionsSections(object):
         This function initialised the basemap object, when the coordinates,
         resolution and projections are changed.
         """
-        print('Inside init')
         
         self.figure.clf()  # we first clean the figure
         #self.cbarax = self.figure.add_axes(self.cbaraxcoords)  # and the colormap axes
@@ -143,8 +142,7 @@ class MatplotlibEditionsSections(object):
 
         else:  # this is the Lambert Conformal Projection (not masked)
             self.make_lambert()
-        
-        print(self.plotax)
+
         self.init_plot()
         self.canvas.draw()
 
@@ -156,6 +154,8 @@ class MatplotlibEditionsSections(object):
 
         The sections are drawn here by using the :py:func:`draw_sections` function
         """
+        
+        self.plotax.clear()
 
         if self.gui.combobox_mode.get() == 'ETOPO':
             self.plotax.stock_img()
