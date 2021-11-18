@@ -254,14 +254,14 @@ class NemoCoords(Coords):
                 message += 'are reconstructed from the dzt variable'
                 print(message)
                 self.reconstruct_3d_e3uv()
-
-            if ('umask_varname' in dictvname) and ('vmask_varname' in dictvname):
-                # if 3D umask and vmask variables are defined, then we mask the dzw and
-                # dzn variables where masks are 0
-                print('Reading U-grid mask: variable %s' % dictvname['umask_varname'])
-                self.dze[np.squeeze(pypago.pyio.readnc(self.filename, dictvname['umask_varname'])) == 0] = np.nan
-                print('Reading V-grid mask: variable %s' % dictvname['vmask_varname'])
-                self.dzn[np.squeeze(pypago.pyio.readnc(self.filename, dictvname['vmask_varname'])) == 0] = np.nan
+            
+            # if ('umask_varname' in dictvname) and ('vmask_varname' in dictvname):
+            #     # if 3D umask and vmask variables are defined, then we mask the dzw and
+            #     # dzn variables where masks are 0
+            #     print('Reading U-grid mask: variable %s' % dictvname['umask_varname'])
+            #     self.dze[np.squeeze(pypago.pyio.readnc(self.filename, dictvname['umask_varname'])) == 0] = np.nan
+            #     print('Reading V-grid mask: variable %s' % dictvname['vmask_varname'])
+            #     self.dzn[np.squeeze(pypago.pyio.readnc(self.filename, dictvname['vmask_varname'])) == 0] = np.nan
 
             # putting dzt as NaN where masked
             self.dzt[np.ma.getmaskarray(self.dzt) == 1] = np.nan
@@ -271,6 +271,7 @@ class NemoCoords(Coords):
             # reconstructing the dzw array
             print('Reconstruction of U-grid western height from U-grid eastern height')
             self.dzw = np.concatenate((self.dze[:, :, -1:], self.dze[:, :, :-1]), axis=-1)
+            print(self.dze)
 
     def reconstruct_3d_e3t(self):
 
