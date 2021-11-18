@@ -98,7 +98,7 @@ def pcolplot(secstruct, vartoplot, istracer, itime=None, ax=None):
     if ax is None:
         ax = plt.gca()
 
-    cs = plt.tripcolor(lvect_pcol, zvect_pcol, atracer_pcol[1:, 1:])
+    cs = plt.tripcolor(lvect_pcol, zvect_pcol, atracer_pcol)
     cb = plt.colorbar(cs)
 
     cmin, cmax = make_percentile_cmap(atracer_pcol, 5)
@@ -181,9 +181,11 @@ def preplot(secstruct, secdata, istracer):
     lvect = np.concatenate((zeros, lvect), axis=1)
     lvect = 0.5 * (lvect[:, 1:] + lvect[:, :-1]) 
 
+    secdata = np.ma.masked_where(secdata == 0, secdata)
     isok = ~np.ma.getmaskarray(secdata)
     atracer = np.ravel(secdata[isok])
     zvect = np.ravel(zvect[isok])
     lvect = np.ravel(lvect[isok])
+    
 
     return atracer, zvect, lvect
