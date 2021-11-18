@@ -271,7 +271,7 @@ class GridModel(tk.Tk):
             filename = tkfiledialog.askopenfilename(**options)
         except:
             print('perdu')
-            print "Unexpected error:", sys.exc_info()[0]
+            print ("Unexpected error:", sys.exc_info()[0])
             raise
 
         if filename:
