@@ -27,11 +27,12 @@ def plot_dom_mask(grid, gridsec=None, mask=None, ax=None):
         ax = plt.gca()
 
     cmap2 = ListedColormap(['none', 'white'])
-    cmap = ListedColormap(['black', 'white', 'gray'])
+    cmap = ListedColormap(['black', 'gray', 'white'])
 
-    plt.imshow(grid.mask, interpolation='none', cmap=cmap)
     if mask is not None:
-        plt.imshow(mask, interpolation='none', cmap=cmap2)
+        plt.imshow(mask, interpolation='none', cmap=cmap)
+    else:
+        plt.imshow(grid.mask, interpolation='none', cmap=cmap)
     if gridsec is not None:
         for sec in gridsec:
             sec.plotsecfaces(ax)
