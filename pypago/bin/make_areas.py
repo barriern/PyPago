@@ -123,6 +123,7 @@ def _definearea(grid, gridsec):
             secname = input('give names of the sections ' + \
                                 '(separate the names by a space) ')
             secname = secname.split()
+
             if len(secname) > 0:
                 test = np.array([s in secgrid_list for s in secname])
                 if np.any(test==0):
@@ -191,10 +192,8 @@ def _definearea(grid, gridsec):
                 print(message)
                 pass
 
-        mask[np.nonzero(mask != 0)] = 1
-
         # to remove white stripes on land
-        mask = mask*grid.mask
+        mask = mask * grid.mask
     
         plt.figure(2)
         plt.clf()
